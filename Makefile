@@ -5,4 +5,7 @@ reqs:
 test:
 	pytest ./test
 
-.PHONY: reqs test
+dist:
+	python setup.py sdist
+
+.PHONY: reqs test dist
