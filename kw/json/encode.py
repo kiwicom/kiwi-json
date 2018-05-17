@@ -1,21 +1,28 @@
-import datetime
+from collections import ItemsView
 from decimal import Decimal
 import enum
 import uuid
 
 
-def default_encoder(self, obj):
-    # Start ignoring RadonBear
-    if isinstance(obj, datetime.datetime):
-        if obj.tzinfo:
-            # eg: 2015-09-25T23:14:42.588601+00:00
-            return obj.isoformat('T')
-        else:
-            # No timezone present - assume UTC.
-            # eg: 2015-09-25T23:14:42.588601Z
-            return obj.isoformat('T') + 'Z'
+def _missing(obj, *args, **kwargs):
+    raise TypeError(
+        "Dependency missing for serialization of {}".format(obj.__class__.__name__)
+    )
 
-    if isinstance(obj, datetime.date):
+
+try:
+    from attr import asdict as attr_asdict
+except ImportError:
+    attr_asdict = _missing
+
+try:
+    from dataclasses import asdict as dc_asdict
+except ImportError:
+    dc_asdict = _missing
+
+
+def default_encoder(obj, dict_factory=dict):
+    if hasattr(obj, "isoformat"):  # date, datetime, arrow
         return obj.isoformat()
 
     if isinstance(obj, (Decimal, uuid.UUID)):
@@ -27,30 +34,24 @@ def default_encoder(self, obj):
     if isinstance(obj, enum.Enum):
         return obj.name
 
-    if obj.__class__.__name__ == 'RowProxy':
-        return dict(obj.items())
+    if isinstance(obj, ItemsView):
+        return dict_factory(obj)
 
-    if obj.__class__.__name__ == 'ItemsView':
-        return dict(obj)
+    if hasattr(obj, "asdict"):  # dictablemodel
+        return dict_factory(obj.asdict().items())
 
-    if hasattr(obj, '__dataclass_fields__'):  # dataclasses
-        return {}
-        # WIP return mask_dict(dataclasses.asdict(obj).items())
+    if obj.__class__.__name__ == "RowProxy":  # sqlalchemy
+        return dict_factory(obj.items())
 
-    if hasattr(obj, '__attrs_attrs__'):  # attrs
-        return {}
-        # return mask_dict(attr.asdict(obj).items())
+    if hasattr(obj, "__dataclass_fields__"):  # dataclasses
+        return dc_asdict(obj, dict_factory=dict_factory).items()
 
-    if hasattr(obj, 'asdict'):
-        obj_dict = obj.asdict()
-        return mask_dict(obj_dict.items())
+    if hasattr(obj, "__attrs_attrs__"):  # attrs
+        return attr_asdict(obj, dict_factory=dict_factory).items()
 
-    if hasattr(obj, '__html__'):
+    if hasattr(obj, "__html__"):
         return str(obj.__html__())
 
-    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-
-def mask_dict(dict):
-    """Sanitize sensitive data."""
-    return dict  # XXX - make pluggable
+    raise TypeError(
+        "Object of type {} is not JSON serializable".format(obj.__class__.__name__)
+    )
