@@ -5,9 +5,7 @@ import uuid
 
 
 def _missing(obj, *args, **kwargs):
-    raise TypeError(
-        "Dependency missing for serialization of {}".format(obj.__class__.__name__)
-    )
+    raise TypeError("Dependency missing for serialization of {}".format(obj.__class__.__name__))
 
 
 try:
@@ -52,6 +50,29 @@ def default_encoder(obj, dict_factory=dict):
     if hasattr(obj, "__html__"):
         return str(obj.__html__())
 
-    raise TypeError(
-        "Object of type {} is not JSON serializable".format(obj.__class__.__name__)
-    )
+    raise TypeError("Object of type {} is not JSON serializable".format(obj.__class__.__name__))
+
+
+def mask_dict_factory(
+    placeholder="-- MASKED --",
+    blacklist=frozenset(("secret", "token", "password", "key", "zoozappkey")),
+    whitelist=frozenset(("booking_token", "public_key", "idempotency_key")),
+):
+    def mask_dict(pairs):
+        """Return a dict with dangerous looking key/value pairs masked."""
+        if pairs is None:
+            return {}
+
+        return {
+            key: (
+                placeholder
+                if key.lower() not in whitelist and any(word in key.lower() for word in blacklist)
+                else value
+            )
+            for key, value in pairs
+        }
+
+    return mask_dict
+
+
+mask_dict = mask_dict_factory()

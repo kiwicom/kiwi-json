@@ -1,3 +1,5 @@
 kiwi_json.egg-info
 dist
 .pytest_cache
+
+.idea
