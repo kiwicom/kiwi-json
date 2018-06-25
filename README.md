@@ -29,7 +29,7 @@ kiwi-json
 If you use your own JSON encoder as a class, use `default_encoder()` in there.
 
 ```
-from kw.json import default_encoder
+from kw.json import default_encoder, mask_dict
 
 class OurJSONEncoder(simplejson.JSONEncoder):
 
@@ -37,6 +37,14 @@ class OurJSONEncoder(simplejson.JSONEncoder):
         return default_encoder(obj, mask_dict)
 ```
 
+`kiwi-json` provides a simple implementation for masking dictionary values with `kw.json.mask_dict`. 
+Or you can create a masking function for it by yourself. It supports customizing placeholder, blacklist and whitelist:
+
+```
+from kw.json import mask_dict_factory
+
+mask_dict = mask_dict_factory(placeholder='0_0', blacklist={'secret'}, whitelist={'not-so-secret'})
+```
 
 If you want to use `json.dumps` directly, you can do it the following way:
 
