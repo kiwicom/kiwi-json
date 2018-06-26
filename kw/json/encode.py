@@ -1,7 +1,8 @@
 from collections import ItemsView
 from decimal import Decimal
-import enum
 import uuid
+
+from ._compat import enum
 
 
 def _missing(obj, *args, **kwargs):
@@ -29,10 +30,11 @@ def default_encoder(obj, dict_factory=dict):
     if isinstance(obj, set):
         return list(obj)
 
-    if isinstance(obj, enum.Enum):
+    if enum is not None and isinstance(obj, enum.Enum):
         return obj.name
 
-    if isinstance(obj, ItemsView):
+    # Second option is for `iteritems()` on Python 2
+    if isinstance(obj, ItemsView) or obj.__class__.__name__ == "dictionary-itemiterator":
         return dict_factory(obj)
 
     if hasattr(obj, "asdict"):  # dictablemodel
