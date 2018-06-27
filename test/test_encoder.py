@@ -4,10 +4,11 @@ from decimal import Decimal
 import sys
 import uuid
 
-from kw.json import default_encoder
-from kw.json._compat import enum
 import pytest
 from pytz import UTC
+
+from kw.json import default_encoder
+from kw.json._compat import enum
 
 
 class Custom:
@@ -44,7 +45,7 @@ def test_daisy_encoder(value, expected):
     assert default_encoder(value) == expected
 
 
-@pytest.mark.skipif(sys.version_info[0] == 3, reason='Not applicable to Python 3')
+@pytest.mark.skipif(sys.version_info[0] == 3, reason="Not applicable to Python 3")
 def test_iteritems():
     assert default_encoder({"foo": 1}.iteritems()) == {"foo": 1}
 

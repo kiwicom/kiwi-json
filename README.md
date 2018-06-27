@@ -53,3 +53,17 @@ from kw.json import default_encoder
 
 dumps = partial(simplejson.dumps, default=default_encoder)
 ```
+
+Flask-based application could utilize the extension:
+
+```
+from kw.json.flask import JSONExtension
+
+
+def create_app():
+    ...
+    JSONExtension(app)
+    ...
+```
+
+Extension will install an encoder to given app.

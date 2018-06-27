@@ -3,3 +3,6 @@ dist
 .pytest_cache
 
 .idea
+
+.coverage
+.tox

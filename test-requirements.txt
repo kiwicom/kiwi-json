@@ -4,10 +4,19 @@
 #
 #    pip-compile --output-file ./test-requirements.txt ./test-requirements.in
 #
+atomicwrites==1.1.5       # via pytest
 attrs==18.1.0             # via pytest
-more-itertools==4.1.0     # via pytest
+click==6.7                # via flask
+coverage==4.5.1           # via pytest-cov
+flask==1.0.2
+itsdangerous==0.24        # via flask
+jinja2==2.10              # via flask
+markupsafe==1.0           # via jinja2
+more-itertools==4.2.0     # via pytest
 pluggy==0.6.0             # via pytest
-py==1.5.3                 # via pytest
-pytest==3.5.1
+py==1.5.4                 # via pytest
+pytest-cov==2.5.1
+pytest==3.6.2
 pytz==2018.4
 six==1.11.0               # via more-itertools, pytest
+werkzeug==0.14.1          # via flask
