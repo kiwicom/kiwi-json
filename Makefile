@@ -8,4 +8,7 @@ test:
 dist:
 	python setup.py sdist
 
-.PHONY: reqs test dist
+pypi:
+	twine upload ./dist/kiwi-json-*.tar.gz --repository=kiwi
+
+.PHONY: reqs test dist pypi
