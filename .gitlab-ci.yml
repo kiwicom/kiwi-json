@@ -1,0 +1,56 @@
+stages:
+ - test
+ - publish_reports
+
+.test-with-artifacts: &test-with-artifacts
+  image: themattrix/tox
+  stage: test
+  variables:
+    ENV_NAME: null
+
+  script:
+   - mkdir -p reports
+   - tox -e $ENV_NAME -- --junitxml=reports/$ENV_NAME/test_report.xml --cov . --cov-report xml --cov-config .coveragerc --cov-append --cov-report xml:reports/coverage.xml
+
+  artifacts:
+    untracked: true
+    expire_in: 12h
+    paths:
+      - reports/
+  cache:
+    paths:
+      - .tox/
+      - reports/
+
+python-3.6:
+  <<: *test-with-artifacts
+  variables:
+    ENV_NAME: py36
+
+tests-python2.7:
+  <<: *test-with-artifacts
+  variables:
+    ENV_NAME: py27
+
+tests-python2.7-enums:
+  <<: *test-with-artifacts
+  variables:
+    ENV_NAME: py27_with_enum
+
+pylint:
+  image: themattrix/tox
+  stage: test
+  script:
+   - tox -e pylint
+
+black:
+  image: themattrix/tox
+  stage: test
+  script:
+   - tox -e black
+
+coala:
+  stage: test
+  image: coala/base:0.11
+  script:
+   - coala --non-interactive
