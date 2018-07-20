@@ -10,13 +10,18 @@ def mask_dict_factory(placeholder=DEFAULT_PLACEHOLDER, blacklist=DEFAULT_BLACKLI
         if pairs is None:
             return {}
 
+        if isinstance(pairs, dict):
+            items = pairs.items()
+        else:
+            items = pairs
+
         return {
             key: (
                 placeholder
                 if key.lower() not in whitelist and any(word in key.lower() for word in blacklist)
                 else value
             )
-            for key, value in pairs
+            for key, value in items
         }
 
     return mask_dict
