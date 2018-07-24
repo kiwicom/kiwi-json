@@ -27,6 +27,11 @@ python-3.6:
   variables:
     ENV_NAME: py36
 
+python-3.7:
+  <<: *test-with-artifacts
+  variables:
+    ENV_NAME: py37
+
 tests-python2.7:
   <<: *test-with-artifacts
   variables:
