@@ -7,14 +7,7 @@ import uuid
 import pytest
 from pytz import UTC
 
-from json import dumps as json_dumps
-
-try:
-    from simplejson import dumps as simplejson_dumps
-except ImportError:
-    simplejson_dumps = None
-
-from kw.json import default_encoder, MaskedJSONEncoder
+from kw.json import default_encoder
 from kw.json._compat import enum
 
 
@@ -72,30 +65,3 @@ def test_unknown_raises():
 
     with pytest.raises(TypeError):
         default_encoder(Foo())
-
-
-@pytest.mark.parametrize(
-    "value, expected",
-    (
-        ({"secret": "FOOO"}, '{"secret": "-- MASKED --"}'),
-        ({"booking_token": "FOOO"}, '{"booking_token": "FOOO"}'),
-        ({"token": "FOOO"}, '{"token": "-- MASKED --"}'),
-        ({"regular_stuff": "FOOO"}, '{"regular_stuff": "FOOO"}'),
-    ),
-)
-@pytest.mark.skipif(simplejson_dumps is None, reason="Simplejson is not available")
-def test_masked_json_encoder_w_simplejson(value, expected):
-    assert simplejson_dumps(value, cls=MaskedJSONEncoder) == expected
-
-
-@pytest.mark.parametrize(
-    "value, expected",
-    (
-        ({"secret": "FOOO"}, '{"secret": "-- MASKED --"}'),
-        ({"booking_token": "FOOO"}, '{"booking_token": "FOOO"}'),
-        ({"token": "FOOO"}, '{"token": "-- MASKED --"}'),
-        ({"regular_stuff": "FOOO"}, '{"regular_stuff": "FOOO"}'),
-    ),
-)
-def test_masked_json_encoder_default(value, expected):
-    assert json_dumps(value, cls=MaskedJSONEncoder) == expected

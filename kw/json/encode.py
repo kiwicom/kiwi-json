@@ -2,8 +2,7 @@ from collections import ItemsView
 from decimal import Decimal
 import uuid
 
-from ._compat import enum, BaseJSONEncoder
-from .utils import mask_dict
+from ._compat import enum
 
 
 def _missing(obj, *args, **kwargs):
@@ -54,13 +53,3 @@ def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
         return str(obj.__html__())
 
     raise TypeError("Object of type {} is not JSON serializable".format(obj.__class__.__name__))
-
-
-class MaskedJSONEncoder(BaseJSONEncoder):
-    def default(self, obj):  # pylint: disable=method-hidden
-        return default_encoder(obj, mask_dict)
-
-    def encode(self, o):
-        if isinstance(o, dict):
-            o = mask_dict(o)
-        return super(MaskedJSONEncoder, self).encode(o)

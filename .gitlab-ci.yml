@@ -27,11 +27,6 @@ python-3.6:
   variables:
     ENV_NAME: py36
 
-python-3.6-simplejson:
-  <<: *test-with-artifacts
-  variables:
-    ENV_NAME: py36
-
 python-3.7:
   <<: *test-with-artifacts
   variables:
