@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from .encode import default_encoder
 
 
-class JSONExtension(object):
+class JSONExtension(object):  # Ignore KeywordBear
     def __init__(self, app=None, encoder=default_encoder, dict_factory=dict):
         self.app = app
         if app is not None:
@@ -13,7 +13,9 @@ class JSONExtension(object):
         from flask import json
 
         class JSONEncoder(json.JSONEncoder):
-            def default(self, obj):
+            # seems pylint bug, original message
+            # E0202: An attribute defined in json.encoder line 158 hides this method (method-hidden)
+            def default(self, obj):  # pylint: disable=E0202
                 return encoder(obj, dict_factory)
 
         app.json_encoder = JSONEncoder

@@ -20,7 +20,7 @@ except ImportError:
     dc_asdict = _missing
 
 
-def default_encoder(obj, dict_factory=dict):
+def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
         return obj.isoformat()
 

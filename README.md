@@ -2,7 +2,6 @@
 
 ![Kiwi JSON Logo](logo.jpg "Kiwi JSON")
 
-
 # Purpose
 
 At the time of creating this lib, there were (at least) three implementation of `default_encoder()`
@@ -11,8 +10,6 @@ At the time of creating this lib, there were (at least) three implementation of 
 
 To prevent this from happening, this library should unify all the implementation, and provide reusable
  implementation of the JSON encoding.
-
-
 
 # Installation
 

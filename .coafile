@@ -104,13 +104,6 @@ files = *.(yml|yaml)
 bears = SpaceConsistencyBear
 indent_size = 2
 
-[all.yaml.lint]
-bears = YAMLLintBear
-
-[dockerfile]
-files = Dockerfile
-bears = DockerfileLintBear
-
 [markdown]
 files = *.md
 bears = MarkdownBear

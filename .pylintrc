@@ -53,6 +53,7 @@ disable =
   similarities,
   inconsistent-return-statements, # checked by mypy
   unbalanced-tuple-unpacking, # "possible" doesn't mean necessary, check seems useless and blocks valid code
+  useless-object-inheritance,
 
 [REPORTS]
 output-format=colorized

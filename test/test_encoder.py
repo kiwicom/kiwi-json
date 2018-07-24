@@ -61,7 +61,7 @@ def test_enum():
 
 def test_unknown_raises():
     class Foo(object):
-        bar = True
+        bar = True  # pylint: disable=C0102
 
     with pytest.raises(TypeError):
         default_encoder(Foo())
