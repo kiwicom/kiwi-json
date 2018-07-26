@@ -8,7 +8,7 @@ with open("test-requirements.txt") as f:
 
 setup(
     name="kiwi-json",
-    version="0.3.0",
+    version="0.4.0",
     url="https://gitlab.skypicker.com/finance/kiwi-json",
     author="yed podtrzitko",
     author_email="yed@kiwi.com",
@@ -18,7 +18,7 @@ setup(
     description="DRY JSON encoder.",
     include_package_data=True,
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 3 - Alpha",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
