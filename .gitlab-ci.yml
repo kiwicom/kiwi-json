@@ -54,10 +54,13 @@ pylint:
    - tox -e pylint
 
 black:
-  image: themattrix/tox
+  image: kiwicom/black:18.6b4
   stage: test
+  variables:
+    MODULES: kw test setup.py
+
   script:
-   - tox -e black
+   - black -l 120 --py36 --check --diff $MODULES
 
 coala:
   stage: test
