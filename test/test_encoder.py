@@ -1,14 +1,20 @@
 from collections import ItemsView
 import datetime
 from decimal import Decimal
+from json import dumps as json_dumps
 import sys
 import uuid
 
 import pytest
 from pytz import UTC
 
-from kw.json import default_encoder
+from kw.json import default_encoder, MaskedJSONEncoder
 from kw.json._compat import enum
+
+try:
+    from simplejson import dumps as simplejson_dumps
+except ImportError:
+    simplejson_dumps = None
 
 
 class Custom:
@@ -65,3 +71,20 @@ def test_unknown_raises():
 
     with pytest.raises(TypeError):
         default_encoder(Foo())
+
+
+@pytest.mark.parametrize(
+    "dumps",
+    (pytest.mark.skipif(simplejson_dumps is None, reason="Simplejson is not available")(simplejson_dumps), json_dumps),
+)
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        ({"secret": "FOOO"}, '{"secret": "-- MASKED --"}'),
+        ({"booking_token": "FOOO"}, '{"booking_token": "FOOO"}'),
+        ({"token": "FOOO"}, '{"token": "-- MASKED --"}'),
+        ({"regular_stuff": "FOOO"}, '{"regular_stuff": "FOOO"}'),
+    ),
+)
+def test_masked_json_encoders(dumps, value, expected):
+    assert dumps(value, cls=MaskedJSONEncoder) == expected
