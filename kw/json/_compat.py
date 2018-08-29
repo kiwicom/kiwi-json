@@ -9,7 +9,7 @@ except ImportError:
 
 try:
     from simplejson.encoder import JSONEncoder as BaseJSONEncoder  # pylint: disable=W0611
-    from simplejson import dumps as json_dumps
+    from simplejson import dumps as json_dumps  # pylint: disable=W0611
 except ImportError:
     from json.encoder import JSONEncoder as BaseJSONEncoder  # pylint: disable=W0611
-    from json import dumps as json_dumps
+    from json import dumps as json_dumps  # pylint: disable=W0611
