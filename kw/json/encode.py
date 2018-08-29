@@ -1,8 +1,9 @@
 from collections import ItemsView
 from decimal import Decimal
+from functools import partial
 import uuid
 
-from ._compat import BaseJSONEncoder, enum
+from ._compat import BaseJSONEncoder, enum, json_dumps
 from .utils import mask_dict
 
 
@@ -64,3 +65,11 @@ class MaskedJSONEncoder(BaseJSONEncoder):
         if isinstance(o, dict):
             o = mask_dict(o)
         return super(MaskedJSONEncoder, self).encode(o)
+
+
+class KiwiJSONEncoder(BaseJSONEncoder):
+    def default(self, obj):  # pylint: disable=method-hidden
+        return default_encoder(obj)
+
+
+dumps = partial(json_dumps, default=default_encoder)
