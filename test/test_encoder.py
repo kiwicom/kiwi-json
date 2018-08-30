@@ -1,15 +1,17 @@
 from collections import ItemsView
 import datetime
 from decimal import Decimal
+from functools import partial
 from json import dumps as json_dumps
 import sys
 import uuid
 
+import attr
 import pytest
 from pytz import UTC
 
 from kw.json import default_encoder, MaskedJSONEncoder
-from kw.json._compat import enum
+from kw.json._compat import DataclassItem, enum
 
 try:
     from simplejson import dumps as simplejson_dumps
@@ -19,6 +21,15 @@ except ImportError:
 
 class Custom:
     pass
+
+
+@attr.s
+class AttrsItem(object):
+    attrib = attr.ib(type=int)
+
+
+class NotDataclassesItem(object):
+    __dataclass_fields__ = ()
 
 
 class HTML:
@@ -88,3 +99,27 @@ def test_unknown_raises():
 )
 def test_masked_json_encoders(dumps, value, expected):
     assert dumps(value, cls=MaskedJSONEncoder) == expected
+
+
+@pytest.mark.parametrize(
+    "dumper, expected",
+    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}')),
+)
+@pytest.mark.skipif(DataclassItem is None, reason="Dataclasses are available only on Python 3.7+")
+def test_dataclasses(dumper, expected):
+    assert dumper(DataclassItem(attrib=1)) == expected  # pylint: disable=not-callable
+
+
+@pytest.mark.parametrize(
+    "dumper, expected",
+    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}')),
+)
+def test_attrs(dumper, expected):
+    assert dumper(AttrsItem(attrib=1)) == expected
+
+
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 7), reason="Dataclasses should not be available")
+def test_missing_dependency():
+    """If we have a class that have the same attributes as attrs provide."""
+    with pytest.raises(TypeError, match="Object of type NotDataclassesItem is not JSON serializable"):
+        default_encoder(NotDataclassesItem())

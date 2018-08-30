@@ -7,19 +7,19 @@ from ._compat import BaseJSONEncoder, enum, json_dumps
 from .utils import mask_dict
 
 
-def _missing(obj, *args, **kwargs):
-    raise TypeError("Dependency missing for serialization of {}".format(obj.__class__.__name__))
+def _fail(obj, *args, **kwargs):
+    raise TypeError("Object of type {} is not JSON serializable".format(obj.__class__.__name__))
 
 
 try:
     from attr import asdict as attr_asdict
 except ImportError:
-    attr_asdict = _missing
+    attr_asdict = _fail
 
 try:
     from dataclasses import asdict as dc_asdict
 except ImportError:
-    dc_asdict = _missing
+    dc_asdict = _fail
 
 
 def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
@@ -46,15 +46,15 @@ def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
         return dict_factory(obj.items())
 
     if hasattr(obj, "__dataclass_fields__"):  # dataclasses
-        return dc_asdict(obj, dict_factory=dict_factory).items()
+        return dc_asdict(obj, dict_factory=dict_factory)
 
     if hasattr(obj, "__attrs_attrs__"):  # attrs
-        return attr_asdict(obj, dict_factory=dict_factory).items()
+        return attr_asdict(obj, dict_factory=dict_factory)
 
     if hasattr(obj, "__html__"):
         return str(obj.__html__())
 
-    raise TypeError("Object of type {} is not JSON serializable".format(obj.__class__.__name__))
+    _fail(obj)
 
 
 class MaskedJSONEncoder(BaseJSONEncoder):

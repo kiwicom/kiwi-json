@@ -13,3 +13,19 @@ try:
 except ImportError:
     from json.encoder import JSONEncoder as BaseJSONEncoder  # pylint: disable=W0611
     from json import dumps as json_dumps  # pylint: disable=W0611
+
+
+try:
+    # To avoid a syntax error when type annotations syntax is not available
+    exec(  # pylint: disable=exec-used
+        """
+from dataclasses import dataclass
+@dataclass
+class DataclassItem:
+    attrib: int
+    """,
+        globals(),
+    )
+except (SyntaxError, ImportError):
+    # SyntaxError for Python 2.7 & ImportError for Python < 3.7
+    DataclassItem = None
