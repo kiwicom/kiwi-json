@@ -18,7 +18,8 @@ setup(
     description="DRY JSON encoder.",
     include_package_data=True,
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Private :: Do Not Upload",
+        "Development Status :: 4 - Beta",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
