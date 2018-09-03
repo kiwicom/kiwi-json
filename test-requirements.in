@@ -1,4 +1,6 @@
+dictalchemy
 flask
 pytest
 pytest-cov
 pytz
+sqlalchemy

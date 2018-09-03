@@ -3,14 +3,14 @@ stages:
  - publish_reports
 
 .test-with-artifacts: &test-with-artifacts
-  image: themattrix/tox
+  image: kiwicom/tox:3.2
   stage: test
   variables:
     ENV_NAME: null
 
   script:
    - mkdir -p reports
-   - tox -e $ENV_NAME -- --junitxml=reports/$ENV_NAME/test_report.xml --cov . --cov-report xml --cov-config .coveragerc --cov-append --cov-report xml:reports/coverage.xml
+   - tox -e $ENV_NAME -- --junitxml=reports/$ENV_NAME/test_report.xml --cov kw --cov-report xml --cov-config .coveragerc --cov-append --cov-report xml:reports/coverage.xml
 
   artifacts:
     untracked: true
@@ -21,6 +21,7 @@ stages:
     paths:
       - .tox/
       - reports/
+    key: $CI_COMMIT_REF_SLUG
 
 python-3.6:
   <<: *test-with-artifacts
@@ -37,12 +38,12 @@ python-3.7:
   variables:
     ENV_NAME: py37
 
-tests-python2.7:
+python2.7:
   <<: *test-with-artifacts
   variables:
     ENV_NAME: py27
 
-tests-python2.7-enums:
+python2.7-enums:
   <<: *test-with-artifacts
   variables:
     ENV_NAME: py27_with_enum

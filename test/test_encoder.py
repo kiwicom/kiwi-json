@@ -3,20 +3,34 @@ import datetime
 from decimal import Decimal
 from functools import partial
 from json import dumps as json_dumps
+from json import loads
 import sys
 import uuid
 
 import attr
+from dictalchemy import DictableModel
 import pytest
 from pytz import UTC
+from sqlalchemy import Column, create_engine, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-from kw.json import default_encoder, MaskedJSONEncoder
+from kw.json import default_encoder, KiwiJSONEncoder, MaskedJSONEncoder
 from kw.json._compat import DataclassItem, enum
 
 try:
     from simplejson import dumps as simplejson_dumps
 except ImportError:
     simplejson_dumps = None
+
+
+Base = declarative_base(cls=DictableModel)
+
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
 
 
 class Custom:
@@ -30,6 +44,10 @@ class AttrsItem(object):
 
 class NotDataclassesItem(object):
     __dataclass_fields__ = ()
+
+
+class NotAttrsItem(object):
+    __attrs_attrs__ = ()
 
 
 class HTML:
@@ -95,6 +113,7 @@ def test_unknown_raises():
         ({"booking_token": "FOOO"}, '{"booking_token": "FOOO"}'),
         ({"token": "FOOO"}, '{"token": "-- MASKED --"}'),
         ({"regular_stuff": "FOOO"}, '{"regular_stuff": "FOOO"}'),
+        (("regular_stuff", "FOOO"), '["regular_stuff", "FOOO"]'),
     ),
 )
 def test_masked_json_encoders(dumps, value, expected):
@@ -103,7 +122,12 @@ def test_masked_json_encoders(dumps, value, expected):
 
 @pytest.mark.parametrize(
     "dumper, expected",
-    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}')),
+    (
+        (default_encoder, {"attrib": 1}),
+        (partial(json_dumps, default=default_encoder), '{"attrib": 1}'),
+        (partial(json_dumps, cls=KiwiJSONEncoder), '{"attrib": 1}'),
+        (partial(json_dumps, cls=MaskedJSONEncoder), '{"attrib": 1}'),
+    ),
 )
 @pytest.mark.skipif(DataclassItem is None, reason="Dataclasses are available only on Python 3.7+")
 def test_dataclasses(dumper, expected):
@@ -123,3 +147,44 @@ def test_missing_dependency():
     """If we have a class that have the same attributes as attrs provide."""
     with pytest.raises(TypeError, match="Object of type NotDataclassesItem is not JSON serializable"):
         default_encoder(NotDataclassesItem())
+
+
+@pytest.fixture
+def alchemy_session():
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+
+    session = sessionmaker(bind=engine)()
+
+    user = User(name="test")
+    session.add(user)
+    session.commit()
+    return session
+
+
+def assert_json(value, expected):
+    """To simplify tests for Python versions that don't preserve ordering in dicts."""
+    encoded = json_dumps(value, default=default_encoder)
+    assert loads(encoded) == expected
+
+
+def test_dictalchemy(alchemy_session):
+    instance = alchemy_session.query(User).first()
+    assert_json(instance, {"id": 1, "name": "test"})
+
+
+def test_sqlalchemy_cursor_row(alchemy_session):
+    data = alchemy_session.execute("SELECT * FROM users").fetchall()
+    assert_json(data, [{"id": 1, "name": "test"}])
+
+
+@pytest.mark.skipif(sys.version_info[0] == 2, reason="That trick doesn't work on Python 2")
+def test_no_attrs():
+    # Need to re-import
+    del sys.modules["kw.json"]
+    del sys.modules["kw.json.encode"]
+    sys.modules["attr"] = None
+    from kw.json import default_encoder  # pylint: disable=reimported
+
+    with pytest.raises(TypeError, match="Object of type NotAttrsItem is not JSON serializable"):
+        default_encoder(NotAttrsItem())

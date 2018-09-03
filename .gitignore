@@ -6,3 +6,5 @@ dist
 
 .coverage
 .tox
+htmlcov
+coverage.xml
