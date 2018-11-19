@@ -8,7 +8,7 @@ with open("test-requirements.txt") as f:
 
 setup(
     name="kiwi-json",
-    version="0.5.0",
+    version="0.5.1",
     url="https://gitlab.skypicker.com/finance/kiwi-json",
     author="yed podtrzitko",
     author_email="yed@kiwi.com",
