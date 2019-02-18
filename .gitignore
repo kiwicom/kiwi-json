@@ -8,3 +8,5 @@ dist
 .tox
 htmlcov
 coverage.xml
+
+*.orig
