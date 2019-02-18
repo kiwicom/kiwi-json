@@ -15,11 +15,14 @@ variables:
 .test-with-artifacts: &test-with-artifacts
   image: kiwicom/tox:3.2
   stage: test
+  services:
+    - postgres:10.5
   variables:
     ENV_NAME: null
 
   script:
    - mkdir -p reports
+   - export DATABASE_URI=postgres://postgres:postgres@$POSTGRES_PORT_5432_TCP_ADDR:5432/postgres
    - tox -e $ENV_NAME -- --junitxml=reports/$ENV_NAME/test_report.xml --cov kw --cov-report xml --cov-config .coveragerc --cov-append --cov-report xml:reports/coverage.xml
 
   artifacts:

@@ -1,4 +1,3 @@
-
 DEFAULT_PLACEHOLDER = "-- MASKED --"
 DEFAULT_BLACKLIST = frozenset(("secret", "token", "password", "key", "zoozappkey"))
 DEFAULT_WHITELIST = frozenset(("booking_token", "public_key", "idempotency_key"))

@@ -1,3 +1,4 @@
+asyncpg; python_version > "3"
 dictalchemy
 flask
 pytest

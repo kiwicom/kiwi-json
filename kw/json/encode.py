@@ -45,6 +45,9 @@ def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
     if obj.__class__.__name__ == "RowProxy":  # sqlalchemy
         return dict_factory(obj.items())
 
+    if obj.__class__.__name__ == "Record":  # asyncpg
+        return dict_factory(obj)
+
     if hasattr(obj, "__dataclass_fields__"):  # dataclasses
         return dc_asdict(obj, dict_factory=dict_factory)
 

@@ -4,6 +4,7 @@ from decimal import Decimal
 from functools import partial
 from json import dumps as json_dumps
 from json import loads
+import os
 import sys
 import uuid
 
@@ -17,6 +18,8 @@ from sqlalchemy.orm import sessionmaker
 
 from kw.json import default_encoder, KiwiJSONEncoder, MaskedJSONEncoder
 from kw.json._compat import DataclassItem, enum
+
+from ._compat import get_asyncpg_record
 
 try:
     from simplejson import dumps as simplejson_dumps
@@ -188,3 +191,12 @@ def test_no_attrs():
 
     with pytest.raises(TypeError, match="Object of type NotAttrsItem is not JSON serializable"):
         default_encoder(NotAttrsItem())
+
+
+@pytest.mark.skipif(get_asyncpg_record is None, reason="Asyncpg is available only on Python 3.5+.")
+def test_asyncpg():
+    import asyncio
+
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(get_asyncpg_record(os.getenv("DATABASE_URI")))  # pylint: disable=not-callable
+    assert json_dumps(result, default=default_encoder) == '[{"value": 1}]'

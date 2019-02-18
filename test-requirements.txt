@@ -4,6 +4,7 @@
 #
 #    pip-compile --output-file ./test-requirements.txt ./test-requirements.in
 #
+asyncpg==0.18.3; python_version > "3"
 atomicwrites==1.2.1       # via pytest
 attrs==18.1.0             # via pytest
 click==6.7                # via flask
