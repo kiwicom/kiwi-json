@@ -60,6 +60,14 @@ def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
     _fail(obj)
 
 
+def raw_encoder(obj):
+    """Return representation of values that are not encodable instead of encoding them."""
+    try:
+        return default_encoder(obj, mask_dict)
+    except TypeError:
+        return repr(obj)
+
+
 class MaskedJSONEncoder(BaseJSONEncoder):
     def default(self, obj):  # pylint: disable=method-hidden
         return default_encoder(obj, mask_dict)

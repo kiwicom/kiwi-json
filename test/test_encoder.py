@@ -16,7 +16,7 @@ from sqlalchemy import Column, create_engine, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from kw.json import default_encoder, KiwiJSONEncoder, MaskedJSONEncoder
+from kw.json import default_encoder, KiwiJSONEncoder, MaskedJSONEncoder, raw_encoder
 from kw.json._compat import DataclassItem, enum
 
 from ._compat import get_asyncpg_record
@@ -97,6 +97,22 @@ def test_enum():
     assert default_encoder(SomeEnum.red) == "red"
 
 
+@pytest.mark.skipif(enum is None, reason="Enum is not available")
+def test_enum_raw_encoder():
+    class SomeEnum(enum.Enum):
+        red = 1
+        green = 2
+
+    assert raw_encoder(SomeEnum.red) == "red"
+
+
+def test_class_raw_encoder():
+    class Foo(object):
+        bar = True  # pylint: disable=C0102
+
+    assert isinstance(raw_encoder(Foo), str)
+
+
 def test_unknown_raises():
     class Foo(object):
         bar = True  # pylint: disable=C0102
@@ -127,7 +143,9 @@ def test_masked_json_encoders(dumps, value, expected):
     "dumper, expected",
     (
         (default_encoder, {"attrib": 1}),
+        (raw_encoder, {"attrib": 1}),
         (partial(json_dumps, default=default_encoder), '{"attrib": 1}'),
+        (partial(json_dumps, default=raw_encoder), '{"attrib": 1}'),
         (partial(json_dumps, cls=KiwiJSONEncoder), '{"attrib": 1}'),
         (partial(json_dumps, cls=MaskedJSONEncoder), '{"attrib": 1}'),
     ),

@@ -64,3 +64,11 @@ def create_app():
 ```
 
 Extension will install an encoder to given app.
+
+If you want to make sure that the encoder dumps classes, you can use the `raw_encoder`:
+
+```
+from kw.json import raw_encoder, dumps
+
+dumps(data, default=raw_encoder)
+```
