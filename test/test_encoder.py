@@ -79,7 +79,7 @@ else:
         (items_view, {"foo": 1}),
     ),
 )
-def test_daisy_encoder(value, expected):
+def test_default_encoder(value, expected):
     assert default_encoder(value) == expected
 
 
