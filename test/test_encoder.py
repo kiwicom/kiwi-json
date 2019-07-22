@@ -16,7 +16,7 @@ from sqlalchemy import Column, create_engine, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from kw.json import default_encoder, KiwiJSONEncoder, MaskedJSONEncoder, raw_encoder
+from kw.json import default_encoder, dumps, KiwiJSONEncoder, MaskedJSONEncoder, raw_encoder
 from kw.json._compat import DataclassItem, enum
 
 from ._compat import get_asyncpg_record
@@ -81,6 +81,31 @@ else:
 )
 def test_daisy_encoder(value, expected):
     assert default_encoder(value) == expected
+
+
+if simplejson_dumps is not None:
+    # simplejson converts Decimal to float, but kw.json needs strings
+    # There are possible workarounds listed in #7
+    decimal_expected = "1"
+else:
+    decimal_expected = '"1"'
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        ({1}, "[1]"),
+        (Decimal("1"), decimal_expected),
+        (UUID, '"{}"'.format(str(UUID))),
+        (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"'),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"'),
+        (datetime.date(2018, 1, 1), '"2018-01-01"'),
+        (HTML(), '"foo"'),
+        (items_view, '{"foo": 1}'),
+    ),
+)
+def test_dumps(value, expected):
+    assert dumps(value) == expected
 
 
 @pytest.mark.skipif(sys.version_info[0] == 3, reason="Not applicable to Python 3")

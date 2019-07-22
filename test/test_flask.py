@@ -12,7 +12,8 @@ else:
 
 def test_mask_dict():
     app = Flask(__name__)
-    JSONExtension(app)
+    extension = JSONExtension(app)
+    assert extension.app is app
     with app.app_context():
         assert json.dumps(items) == '{"secret": "foo"}'
 
