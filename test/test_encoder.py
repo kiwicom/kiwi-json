@@ -8,6 +8,7 @@ import os
 import sys
 import uuid
 
+import arrow
 import attr
 from dictalchemy import DictableModel
 import pytest
@@ -67,20 +68,25 @@ else:
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    "value, expected, date_as_unix_time",
     (
-        ({1}, [1]),
-        (Decimal("1"), "1"),
-        (UUID, str(UUID)),
-        (datetime.datetime(2018, 1, 1), "2018-01-01T00:00:00"),
-        (datetime.datetime(2018, 1, 1, tzinfo=UTC), "2018-01-01T00:00:00+00:00"),
-        (datetime.date(2018, 1, 1), "2018-01-01"),
-        (HTML(), "foo"),
-        (items_view, {"foo": 1}),
+        ({1}, [1], False),
+        (Decimal("1"), "1", False),
+        (UUID, str(UUID), False),
+        (datetime.datetime(2018, 1, 1), "2018-01-01T00:00:00", False),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), "2018-01-01T00:00:00+00:00", False),
+        (arrow.get("2018-01-01"), "2018-01-01T00:00:00+00:00", False),
+        (datetime.date(2018, 1, 1), "2018-01-01", False),
+        (datetime.datetime(2018, 1, 1), 1514764800, True),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), 1514764800, True),
+        (datetime.date(2018, 1, 1), 1514764800, True),
+        (arrow.get("2018-01-01"), 1514764800, True),
+        (HTML(), "foo", False),
+        (items_view, {"foo": 1}, False),
     ),
 )
-def test_default_encoder(value, expected):
-    assert default_encoder(value) == expected
+def test_default_encoder(value, expected, date_as_unix_time):
+    assert default_encoder(value, date_as_unix_time=date_as_unix_time) == expected
 
 
 if simplejson_dumps is not None:

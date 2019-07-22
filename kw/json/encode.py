@@ -1,7 +1,10 @@
+import calendar
 from collections import ItemsView
 from decimal import Decimal
 from functools import partial
 import uuid
+
+import arrow
 
 from ._compat import BaseJSONEncoder, enum, json_dumps
 from .utils import mask_dict
@@ -22,8 +25,12 @@ except ImportError:
     dc_asdict = _fail
 
 
-def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
+def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore RadonBear
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
+        if date_as_unix_time:
+            if isinstance(obj, arrow.arrow.Arrow):
+                return obj.timestamp
+            return calendar.timegm(obj.timetuple())
         return obj.isoformat()
 
     if isinstance(obj, (Decimal, uuid.UUID)):
@@ -60,10 +67,10 @@ def default_encoder(obj, dict_factory=dict):  # Ignore RadonBear
     _fail(obj)
 
 
-def raw_encoder(obj):
+def raw_encoder(obj, date_as_unix_time=False):
     """Return representation of values that are not encodable instead of encoding them."""
     try:
-        return default_encoder(obj, mask_dict)
+        return default_encoder(obj, dict_factory=mask_dict, date_as_unix_time=date_as_unix_time)
     except TypeError:
         return repr(obj)
 
@@ -83,4 +90,8 @@ class KiwiJSONEncoder(BaseJSONEncoder):
         return default_encoder(obj)
 
 
-dumps = partial(json_dumps, default=default_encoder)
+def dumps(*args, **kwargs):
+    if "default" not in kwargs:
+        date_as_unix_time = kwargs.pop("date_as_unix_time", False)
+        kwargs["default"] = partial(default_encoder, date_as_unix_time=date_as_unix_time)
+    return json_dumps(*args, **kwargs)

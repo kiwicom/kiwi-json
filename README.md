@@ -72,3 +72,24 @@ from kw.json import raw_encoder, dumps
 
 dumps(data, default=raw_encoder)
 ```
+
+To dump dates and datetimes as unix time, use `date_as_unix_time=True`:
+
+```python
+import arrow
+from datetime import datetime
+from kw.json import dumps
+
+dumps({1: datetime.now(), 2: arrow.now()}, date_as_unix_time=True)
+```
+
+If you want to combine the powers of `date_as_unix_time` and `raw_encoder`,
+you can create your own encoder using partial:
+
+```python
+from kw.json import dumps, raw_encoder
+from functools import partial
+
+my_encoder = partial(raw_encoder, date_as_unix_time=True)
+dumps(obj, default=my_encoder)
+```
