@@ -4,7 +4,7 @@ from decimal import Decimal
 from functools import partial
 import uuid
 
-from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps
+from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps, simplejson_available
 from .utils import mask_dict
 
 
@@ -89,6 +89,10 @@ class KiwiJSONEncoder(BaseJSONEncoder):
 
 
 def modify_kwargs(kwargs):
+    # To keep consistent behavior even if simplejson behaves differently by default
+    # See #7
+    if simplejson_available:
+        kwargs.setdefault("use_decimal", False)
     if "default" not in kwargs:
         date_as_unix_time = kwargs.pop("date_as_unix_time", False)
         kwargs["default"] = partial(default_encoder, date_as_unix_time=date_as_unix_time)

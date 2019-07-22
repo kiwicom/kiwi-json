@@ -95,21 +95,11 @@ def test_default_encoder_defaults():
     assert default_encoder(datetime.datetime(2018, 1, 1)) == "2018-01-01T00:00:00"
 
 
-if simplejson_dumps is not None:
-    # simplejson converts Decimal to float, but kw.json needs strings
-    # There are possible workarounds listed in #7
-    decimal_expected = "1"
-    decimal_expected_for_dump = 1
-else:
-    decimal_expected = '"1"'
-    decimal_expected_for_dump = "1"
-
-
 @pytest.mark.parametrize(
     "value, expected, date_as_unix_time",
     (
         ({1}, "[1]", False),
-        (Decimal("1"), decimal_expected, False),
+        (Decimal("1"), '"1"', False),
         (UUID, '"{}"'.format(str(UUID)), False),
         (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"', False),
         (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"', False),
@@ -158,7 +148,7 @@ def test_dump_with_default_and_date_as_unix_time():
     "value, expected",
     (
         ({1}, [1]),
-        (Decimal("1"), decimal_expected_for_dump),
+        (Decimal("1"), "1"),
         (UUID, str(UUID)),
         (datetime.datetime(2018, 1, 1), "2018-01-01T00:00:00"),
         (datetime.datetime(2018, 1, 1, tzinfo=UTC), "2018-01-01T00:00:00+00:00"),
