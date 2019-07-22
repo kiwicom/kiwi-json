@@ -90,6 +90,11 @@ def test_default_encoder(value, expected, date_as_unix_time):
     assert default_encoder(value, date_as_unix_time=date_as_unix_time) == expected
 
 
+def test_default_encoder_defaults():
+    # By default `default_encoder` encodes datetimes as ISO
+    assert default_encoder(datetime.datetime(2018, 1, 1)) == "2018-01-01T00:00:00"
+
+
 if simplejson_dumps is not None:
     # simplejson converts Decimal to float, but kw.json needs strings
     # There are possible workarounds listed in #7
@@ -101,20 +106,52 @@ else:
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    "value, expected, date_as_unix_time",
     (
-        ({1}, "[1]"),
-        (Decimal("1"), decimal_expected),
-        (UUID, '"{}"'.format(str(UUID))),
-        (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"'),
-        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"'),
-        (datetime.date(2018, 1, 1), '"2018-01-01"'),
-        (HTML(), '"foo"'),
-        (items_view, '{"foo": 1}'),
+        ({1}, "[1]", False),
+        (Decimal("1"), decimal_expected, False),
+        (UUID, '"{}"'.format(str(UUID)), False),
+        (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"', False),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"', False),
+        (arrow.get("2018-01-01"), '"2018-01-01T00:00:00+00:00"', False),
+        (datetime.date(2018, 1, 1), '"2018-01-01"', False),
+        (datetime.datetime(2018, 1, 1), "1514764800", True),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), "1514764800", True),
+        (datetime.date(2018, 1, 1), "1514764800", True),
+        (arrow.get("2018-01-01"), "1514764800", True),
+        (HTML(), '"foo"', False),
+        (items_view, '{"foo": 1}', False),
     ),
 )
-def test_dumps(value, expected):
-    assert dumps(value) == expected
+def test_dumps(value, expected, date_as_unix_time):
+    assert dumps(value, date_as_unix_time=date_as_unix_time) == expected
+
+
+def test_date_as_unix_time_default():
+    # When `date_as_unix_time` is not passed, then it is disabled and dates are converted as ISO
+    assert dumps(datetime.date(2018, 1, 1)) == '"2018-01-01"'
+
+
+def test_raw_encoder_with_date_unix_time_default():
+    class Foo(object):
+        def __repr__(self):
+            return "<Foo>"
+
+    # by default `raw_encoder` encodes dates as ISO
+    assert dumps({"foo": Foo(), "bar": datetime.date(2018, 1, 1)}, default=raw_encoder) == dumps(
+        {"foo": "<Foo>", "bar": "2018-01-01"}
+    )
+
+
+def test_dump_with_default():
+    # by default `dumps` encodes dates as ISO
+    assert dumps(datetime.date(2018, 1, 1), default=str) == '"2018-01-01"'
+
+
+def test_dump_with_default_and_date_as_unix_time():
+    with pytest.raises(TypeError):
+        # `date_as_unix_time` leads to failing when `default` is specified
+        dumps(datetime.date(2018, 1, 1), default=str, date_as_unix_time=True)
 
 
 @pytest.mark.parametrize(
@@ -172,7 +209,7 @@ def test_unknown_raises():
     class Foo(object):
         bar = True  # pylint: disable=C0102
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="^Object of type Foo is not JSON serializable$"):
         default_encoder(Foo())
 
 
