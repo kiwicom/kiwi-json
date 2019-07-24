@@ -91,4 +91,5 @@ release:
    - python setup.py bdist_wheel --universal upload -r kiwi
   only:
    - master
+  when: manual
   allow_failure: yes  # always runs but fails if there's already a release for the version
