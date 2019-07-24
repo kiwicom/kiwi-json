@@ -10,3 +10,8 @@ htmlcov
 coverage.xml
 
 *.orig
+
+.mypy_cache
+.vscode
+__pycache__
+*.pyc

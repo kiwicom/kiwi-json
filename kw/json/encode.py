@@ -6,7 +6,7 @@ import uuid
 
 import arrow
 
-from ._compat import BaseJSONEncoder, enum, json_dumps
+from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps
 from .utils import mask_dict
 
 
@@ -90,8 +90,17 @@ class KiwiJSONEncoder(BaseJSONEncoder):
         return default_encoder(obj)
 
 
-def dumps(*args, **kwargs):
+def modify_kwargs(kwargs):
     if "default" not in kwargs:
         date_as_unix_time = kwargs.pop("date_as_unix_time", False)
         kwargs["default"] = partial(default_encoder, date_as_unix_time=date_as_unix_time)
+
+
+def dumps(*args, **kwargs):
+    modify_kwargs(kwargs)
     return json_dumps(*args, **kwargs)
+
+
+def dump(*args, **kwargs):
+    modify_kwargs(kwargs)
+    return json_dump(*args, **kwargs)
