@@ -4,8 +4,6 @@ from decimal import Decimal
 from functools import partial
 import uuid
 
-import arrow
-
 from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps
 from .utils import mask_dict
 
@@ -28,7 +26,7 @@ except ImportError:
 def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore RadonBear
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
         if date_as_unix_time:
-            if isinstance(obj, arrow.arrow.Arrow):
+            if obj.__class__.__name__ == "Arrow":
                 return obj.timestamp
             return calendar.timegm(obj.timetuple())
         return obj.isoformat()

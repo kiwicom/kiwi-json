@@ -4,6 +4,3 @@
 #
 #    pip-compile --output-file=./requirements.txt ./requirements.in
 #
-arrow==0.14.2
-python-dateutil==2.8.0    # via arrow
-six==1.11.0               # via python-dateutil
