@@ -295,7 +295,7 @@ def test_no_attrs():
 
 @pytest.mark.skipif(get_asyncpg_record is None, reason="Asyncpg is available only on Python 3.5+.")
 def test_asyncpg():
-    import asyncio
+    import asyncio  # pylint: disable=import-outside-toplevel
 
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(get_asyncpg_record(os.getenv("DATABASE_URI")))  # pylint: disable=not-callable
