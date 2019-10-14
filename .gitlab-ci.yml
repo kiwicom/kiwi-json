@@ -13,7 +13,7 @@ variables:
     password: $PYPI_PASSWORD
 
 .test-with-artifacts: &test-with-artifacts
-  image: kiwicom/tox:3.2
+  image: kiwicom/tox:3.12
   stage: test
   services:
     - postgres:10.5
@@ -62,13 +62,13 @@ python2.7-enums:
     ENV_NAME: py27_with_enum
 
 pylint:
-  image: themattrix/tox
+  image: kiwicom/tox:3.12
   stage: test
   script:
    - tox -e pylint
 
 black:
-  image: kiwicom/black:18.6b4
+  image: kiwicom/black:19.3b0
   stage: test
   variables:
     MODULES: kw test setup.py
