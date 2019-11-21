@@ -70,3 +70,8 @@ black:
 coala:
   stage: test
 
+pypi_upload:
+  only:
+    changes:
+      - setup.py
+
