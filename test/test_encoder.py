@@ -204,10 +204,6 @@ def test_unknown_raises():
 
 
 @pytest.mark.parametrize(
-    "dumps",
-    (pytest.mark.skipif(simplejson_dumps is None, reason="Simplejson is not available")(simplejson_dumps), json_dumps),
-)
-@pytest.mark.parametrize(
     "value, expected",
     (
         ({"secret": "FOOO"}, '{"secret": "-- MASKED --"}'),
@@ -217,8 +213,9 @@ def test_unknown_raises():
         (("regular_stuff", "FOOO"), '["regular_stuff", "FOOO"]'),
     ),
 )
-def test_masked_json_encoders(dumps, value, expected):
-    assert dumps(value, cls=MaskedJSONEncoder) == expected
+def test_masked_json_encoders(value, expected):
+    dumper = json_dumps if simplejson_dumps is None else simplejson_dumps
+    assert dumper(value, cls=MaskedJSONEncoder) == expected
 
 
 @pytest.mark.parametrize(
