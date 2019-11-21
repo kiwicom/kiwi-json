@@ -24,7 +24,7 @@ python-dateutil==2.8.0    # via arrow
 pytz==2018.5
 six==1.11.0               # via more-itertools, pytest, python-dateutil
 sqlalchemy==1.2.11
-werkzeug==0.14.1          # via flask
+werkzeug==0.15.3          # via flask
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.0.1        # via pytest
+# setuptools==41.6.0        # via pytest
