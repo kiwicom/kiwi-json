@@ -1,8 +1,9 @@
 asyncpg; python_version > "3"
 dictalchemy
 flask
-pytest
+pytest <= 4.6.6
 pytest-cov
 pytz
 sqlalchemy
 arrow
+more-itertools < 6.0.0
