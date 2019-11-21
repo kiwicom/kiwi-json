@@ -13,11 +13,9 @@ To prevent this from happening, this library should unify all the implementation
 
 # Installation
 
-Add `kiwi-json` into your requirements (plus our PyPI, if you don't have it there already)
+Add `kiwi-json` into your requirements
 
 ```
---extra-index-url https://pypi.skypicker.com/pypi
-
 kiwi-json
 ```
 
@@ -92,4 +90,18 @@ from functools import partial
 
 my_encoder = partial(raw_encoder, date_as_unix_time=True)
 dumps(obj, default=my_encoder)
+```
+
+# Running tests
+
+To run the tests we use tox. Before you can run the tests please make sure you have postgres database running and the DATABASE_URI env variable set
+
+```
+export DATABASE_URI='postgres://[username]:[password]@[host]:[port]/[database]'
+```
+
+Once you have this set up just execute:
+
+```
+tox
 ```

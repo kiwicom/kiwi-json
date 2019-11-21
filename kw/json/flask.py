@@ -10,7 +10,7 @@ class JSONExtension(object):  # Ignore KeywordBear
             self.init_app(app, encoder, dict_factory)
 
     def init_app(self, app, encoder=default_encoder, dict_factory=dict):
-        from flask import json
+        from flask import json  # pylint: disable=import-outside-toplevel
 
         class JSONEncoder(json.JSONEncoder):
             # seems pylint bug, original message

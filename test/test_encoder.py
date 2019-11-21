@@ -287,7 +287,7 @@ def test_no_attrs():
     del sys.modules["kw.json"]
     del sys.modules["kw.json.encode"]
     sys.modules["attr"] = None
-    from kw.json import default_encoder  # pylint: disable=reimported
+    from kw.json import default_encoder  # pylint: disable=reimported,import-outside-toplevel
 
     with pytest.raises(TypeError, match="Object of type NotAttrsItem is not JSON serializable"):
         default_encoder(NotAttrsItem())

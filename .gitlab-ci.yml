@@ -2,15 +2,10 @@ stages:
  - test
  - release
 
-variables:
-  PYPI_CONFIG: |
-    [distutils]
-    index-servers = kiwi
-
-    [kiwi]
-    repository: https://pypi.skypicker.com/pypi/
-    username: $PYPI_USERNAME
-    password: $PYPI_PASSWORD
+include:
+  - 'https://ci-files.skypicker.com/templates/release/pypi_upload.yml'
+  - 'https://ci-files.skypicker.com/templates/build/black.yml'
+  - 'https://ci-files.skypicker.com/templates/build/coala.yml'
 
 .test-with-artifacts: &test-with-artifacts
   image: kiwicom/tox:3.12
@@ -68,28 +63,10 @@ pylint:
    - tox -e pylint
 
 black:
-  image: kiwicom/black:19.3b0
   stage: test
-  variables:
-    MODULES: kw test setup.py
-
   script:
    - black -l 120 --py36 --check --diff $MODULES
 
 coala:
   stage: test
-  image: coala/base:0.11
-  script:
-   - coala --non-interactive
 
-release:
-  stage: release
-  image: python:3.6-alpine
-  script:
-   - echo "$PYPI_CONFIG" > ~/.pypirc
-   - pip install wheel
-   - python setup.py bdist_wheel --universal upload -r kiwi
-  only:
-   - master
-  when: manual
-  allow_failure: yes  # always runs but fails if there's already a release for the version
