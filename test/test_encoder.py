@@ -1,4 +1,4 @@
-from collections import ItemsView
+from collections import ItemsView, namedtuple
 import datetime
 from decimal import Decimal
 from functools import partial
@@ -42,6 +42,11 @@ class Custom:
     pass
 
 
+Namedtuple = namedtuple("Namedtuple", ["a", "b"])
+test_namedtuple = Namedtuple(1.3333, 2.3333)
+test_namedtuple_complex = Namedtuple(1.3333, Namedtuple(1.3333, {1: 1.3333}))
+
+
 @attr.s
 class AttrsItem(object):
     attrib = attr.ib(type=int)
@@ -64,8 +69,12 @@ UUID = uuid.uuid4()
 
 if sys.version_info[0] == 2:
     items_view = ItemsView({"foo": 1})
+    items_view_float = ItemsView({"foo": 1.333})
+    items_view_complex = ItemsView({1: 1.333, 2: ItemsView({2: 0.333})})
 else:
     items_view = {"foo": 1}.items()
+    items_view_float = {"foo": 1.333}.items()
+    items_view_complex = {1: 1.333, 2: {2: 0.333}.items()}.items()
 
 
 @pytest.mark.parametrize(
@@ -115,6 +124,57 @@ def test_default_encoder_defaults():
 )
 def test_dumps(value, expected, date_as_unix_time):
     assert dumps(value, date_as_unix_time=date_as_unix_time) == expected
+
+
+@pytest.mark.parametrize(
+    "values, expected, precision",
+    (
+        ((1.333, 1.333), "1.33", 2),
+        (({1: 1.333}, {1: 1.333}), '{"1": 1.33}', 2),
+        (([1.333, 2.333], [1.333, 2.333]), "[1.33, 2.33]", 2),
+        (([1.333, {1: 1.333}], [1.333, {1: 1.333}]), '[1.33, {"1": 1.33}]', 2),
+        (([1.333, {1: 1.333}, {1.333}], [1.333, {1: 1.333}, {1.333}]), '[1.33, {"1": 1.33}, [1.33]]', 2),
+        ((items_view_float, items_view_float), '{"foo": 1.33}', 2),
+        ((items_view_complex, items_view_complex), '{"1": 1.33, "2": {"2": 0.33}}', 2),
+        ((HTML(), None), '"foo"', 2),
+        (([set()], [set()]), "[[]]", 2),
+        (((1.3333, 2.3333), (1.3333, 2.3333)), "[1.33, 2.33]", 2),
+        ((({1: 1.33333}, 1.33333), ({1: 1.33333}, 1.33333)), '[{"1": 1.33}, 1.33]', 2),
+        (
+            ([{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}], [{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}]),
+            '[{"1": 1.22, "2": [1.33, {"1": 1.33}, {"3": [3.33]}]}]',
+            2,
+        ),
+    ),
+)
+def test_rounding(values, expected, precision):
+    before, after = values
+    assert dumps(before, precision=precision) == expected
+    if after:
+        # check if object was not modified by rounding and removing of dict_items
+        assert before == after
+
+
+@pytest.mark.parametrize(
+    "values, expected, precision",
+    (
+        ((test_namedtuple, test_namedtuple), {"as_object": '{"a": 1.33, "b": 2.33}', "as_list": "[1.33, 2.33]"}, 2),
+        (
+            (test_namedtuple_complex, test_namedtuple_complex),
+            {"as_object": '{"a": 1.33, "b": {"a": 1.33, "b": {"1": 1.33}}}', "as_list": '[1.33, [1.33, {"1": 1.33}]]',},
+            2,
+        ),
+    ),
+)
+def test_rounding_tuples(values, expected, precision):
+    before, after = values
+    if simplejson_dumps:
+        # simplejson supports `namedtuple_as_object` param unlike json
+        assert dumps(before, precision=precision) == expected["as_object"]
+        assert dumps(before, precision=precision, namedtuple_as_object=False) == expected["as_list"]
+    else:
+        assert dumps(before, precision=precision) == expected["as_list"]
+    assert before == after
 
 
 def test_date_as_unix_time_default():
