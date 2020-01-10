@@ -1,5 +1,5 @@
 import calendar
-from collections import ItemsView
+from collections import ItemsView, namedtuple
 from decimal import Decimal
 from functools import partial
 import uuid
@@ -88,6 +88,48 @@ class KiwiJSONEncoder(BaseJSONEncoder):
         return default_encoder(obj)
 
 
+def format_value(value, precision):
+    """Format provided value."""
+    if isinstance(value, float):
+        return round(value, precision)
+    if isinstance(value, (list, set)):
+        return traverse_iterable(value, precision)
+    if isinstance(value, ItemsView) or value.__class__.__name__ == "dictionary-itemiterator":
+        return traverse_dict(dict(value), precision)
+    if isinstance(value, dict):
+        return traverse_dict(value, precision)
+    if isinstance(value, tuple):
+        if getattr(value, "_fields", False):
+            # namedtuple should stay namedtuple - simplejson can format it differently
+            # depending on the `namedtuple_as_object` param
+            NewNamedtuple = namedtuple(type(value).__name__, value._asdict().keys())
+            return NewNamedtuple(**format_value(value._asdict(), precision))
+        # convert tuple to list; the tuple would be turned to list in simplejson/json anyways
+        return traverse_iterable(list(value), precision)
+    return value
+
+
+def traverse_iterable(iterable, precision):
+    """Traverse list or set and round floats."""
+    return [format_value(value, precision) for value in iterable]
+
+
+
+def traverse_dict(obj, precision):
+    """Traverse dictionary and round floats."""
+    return {key: format_value(value, precision) for key, value in obj.items()}
+
+
+def round_floats(args, kwargs):
+    data = args[0]
+    precision = kwargs.pop("precision", False)
+    new_args = list(args)
+    if precision is not False:
+        data = format_value(data, precision)
+        new_args[0] = data
+    return new_args
+
+
 def modify_kwargs(kwargs):
     if "default" not in kwargs:
         date_as_unix_time = kwargs.pop("date_as_unix_time", False)
@@ -95,10 +137,12 @@ def modify_kwargs(kwargs):
 
 
 def dumps(*args, **kwargs):
+    new_args = round_floats(args, kwargs)
     modify_kwargs(kwargs)
-    return json_dumps(*args, **kwargs)
+    return json_dumps(*new_args, **kwargs)
 
 
 def dump(*args, **kwargs):
+    new_args = round_floats(args, kwargs)
     modify_kwargs(kwargs)
-    return json_dump(*args, **kwargs)
+    return json_dump(*new_args, **kwargs)
