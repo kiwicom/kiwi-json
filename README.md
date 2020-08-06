@@ -13,7 +13,7 @@ To prevent this from happening, this library should unify all the implementation
 
 # Installation
 
-Add `kiwi-json` into your requirements
+Add `kiwi-json` into your requirements.in file
 
 ```
 kiwi-json
@@ -23,7 +23,8 @@ kiwi-json
 
 If you use your own JSON encoder as a class, use `default_encoder()` in there.
 
-```
+```python
+import simplejson
 from kw.json import default_encoder, mask_dict
 
 class OurJSONEncoder(simplejson.JSONEncoder):
@@ -35,7 +36,7 @@ class OurJSONEncoder(simplejson.JSONEncoder):
 `kiwi-json` provides a simple implementation for masking dictionary values with `kw.json.mask_dict`. 
 Or you can create a masking function for it by yourself. It supports customizing placeholder, blacklist and whitelist:
 
-```
+```python
 from kw.json import mask_dict_factory
 
 mask_dict = mask_dict_factory(placeholder='0_0', blacklist={'secret'}, whitelist={'not-so-secret'})
@@ -43,7 +44,8 @@ mask_dict = mask_dict_factory(placeholder='0_0', blacklist={'secret'}, whitelist
 
 If you want to use `json.dumps` directly, you can do it the following way:
 
-```
+```python
+import simplejson
 from kw.json import default_encoder
 
 dumps = partial(simplejson.dumps, default=default_encoder)
@@ -51,7 +53,7 @@ dumps = partial(simplejson.dumps, default=default_encoder)
 
 Flask-based application could utilize the extension:
 
-```
+```python
 from kw.json.flask import JSONExtension
 
 
@@ -65,7 +67,7 @@ Extension will install an encoder to given app.
 
 If you want to make sure that the encoder dumps classes, you can use the `raw_encoder`:
 
-```
+```python
 from kw.json import raw_encoder, dumps
 
 dumps(data, default=raw_encoder)
@@ -96,7 +98,7 @@ dumps(obj, default=my_encoder)
 
 To run the tests we use tox. Before you can run the tests please make sure you have postgres database running and the DATABASE_URI env variable set
 
-```
+```bash
 export DATABASE_URI='postgres://[username]:[password]@[host]:[port]/[database]'
 ```
 
