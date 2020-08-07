@@ -1,0 +1,2 @@
+class KiwiJsonError(Exception):
+    pass

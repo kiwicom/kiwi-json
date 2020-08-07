@@ -1,10 +1,10 @@
 import calendar
+import uuid
 from collections import ItemsView, namedtuple
 from decimal import Decimal
 from functools import partial
-import uuid
 
-from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps, simplejson_available
+from ._compat import BaseJSONEncoder, _dump, _dumps, enum, simplejson_available
 from .utils import mask_dict
 
 
@@ -122,7 +122,6 @@ def format_value(value, precision):
 def traverse_iterable(iterable, precision):
     """Traverse list or set and round floats."""
     return [format_value(value, precision) for value in iterable]
-    
 
 
 def traverse_dict(obj, precision):
@@ -143,10 +142,10 @@ def round_floats(args, kwargs):
 def dumps(*args, **kwargs):
     new_args = round_floats(args, kwargs)
     modify_kwargs(kwargs)
-    return json_dumps(*new_args, **kwargs)
+    return _dumps(*new_args, **kwargs)
 
 
 def dump(*args, **kwargs):
     new_args = round_floats(args, kwargs)
     modify_kwargs(kwargs)
-    return json_dump(*new_args, **kwargs)
+    return _dump(*new_args, **kwargs)

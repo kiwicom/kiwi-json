@@ -51,6 +51,15 @@ from kw.json import default_encoder
 dumps = partial(simplejson.dumps, default=default_encoder)
 ```
 
+If you have `simplejson` installed, you can use Decimal as JSON `number` type:
+```python
+from decimal import Decimal
+from kw.json import dumps, loads
+
+assert dumps({"num": Decimal("1.234")}, use_decimal=True) == '{"num": 1.234}'
+assert loads('{"num": 1.234}', use_decimal=True) == {"num": Decimal("1.234")}
+```
+
 Flask-based application could utilize the extension:
 
 ```python
