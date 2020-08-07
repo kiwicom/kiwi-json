@@ -23,7 +23,7 @@ except ImportError:
     from json import load as json_load  # pylint: disable=W0611
 
     simplejson_available = False
-
+from .exceptions import KiwiJsonError
 
 try:
     # To avoid a syntax error when type annotations syntax is not available
@@ -39,3 +39,27 @@ class DataclassItem:
 except (SyntaxError, ImportError):
     # SyntaxError for Python 2.7 & ImportError for Python < 3.7
     DataclassItem = None
+
+
+def prevent_unexpected_argument_error(func):
+    __use_decimal_error_message = (
+        "You can't serialise Decimal as JSON number safely with the standard 'json' module. "
+        "Make sure you have 'simplejson' or similar installed."
+    )
+
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except TypeError as err:
+            if str(err) == "__init__() got an unexpected keyword argument 'use_decimal'":
+                raise KiwiJsonError(__use_decimal_error_message)
+            raise
+        return result
+
+    return wrapper
+
+
+_dumps = prevent_unexpected_argument_error(json_dumps)
+_dump = prevent_unexpected_argument_error(json_dump)
+_loads = prevent_unexpected_argument_error(json_loads)
+_load = prevent_unexpected_argument_error(json_load)

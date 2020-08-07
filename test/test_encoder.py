@@ -1,25 +1,26 @@
-from collections import ItemsView, namedtuple
 import datetime
+import os
+import sys
+import uuid
+from collections import ItemsView, namedtuple
 from decimal import Decimal
 from functools import partial
 from json import dumps as json_dumps
 from json import load as json_load
 from json import loads
-import os
-import sys
-import uuid
 
 import arrow
 import attr
-from dictalchemy import DictableModel
 import pytest
+from dictalchemy import DictableModel
 from pytz import UTC
-from sqlalchemy import Column, create_engine, Integer, String
+from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from kw.json import default_encoder, dump, dumps, KiwiJSONEncoder, MaskedJSONEncoder, raw_encoder
+from kw.json import KiwiJSONEncoder, MaskedJSONEncoder, default_encoder, dump, dumps, raw_encoder
 from kw.json._compat import DataclassItem, enum
+from kw.json.exceptions import KiwiJsonError
 
 from ._compat import get_asyncpg_record
 
@@ -99,6 +100,21 @@ def test_default_encoder(value, expected, date_as_unix_time):
     assert default_encoder(value, date_as_unix_time=date_as_unix_time) == expected
 
 
+@pytest.mark.skipif(simplejson_dumps is None, reason="Decimal encoding with simplejson only")
+@pytest.mark.parametrize(
+    "value, expected",
+    ((Decimal("1"), "1"), (Decimal("-1"), "-1"), (Decimal("0.123456789123456789"), "0.123456789123456789"),),
+)
+def test_simplejson_encoder_with_decimal(value, expected):
+    assert dumps(value, use_decimal=True) == expected
+
+
+@pytest.mark.skipif(simplejson_dumps is not None, reason="Standard json only")
+def test_json_with_use_decimal_argument():
+    with pytest.raises(KiwiJsonError, match=r".*Decimal.*"):
+        dumps(Decimal(0), use_decimal=True)
+
+
 def test_default_encoder_defaults():
     # By default `default_encoder` encodes datetimes as ISO
     assert default_encoder(datetime.datetime(2018, 1, 1)) == "2018-01-01T00:00:00"
@@ -111,7 +127,7 @@ def test_default_encoder_defaults():
         (Decimal("1"), '"1"', False),
         (UUID, '"{}"'.format(str(UUID)), False),
         (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"', False),
-        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"', False),
+        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"', False,),
         (arrow.get("2018-01-01"), '"2018-01-01T00:00:00+00:00"', False),
         (datetime.date(2018, 1, 1), '"2018-01-01"', False),
         (datetime.datetime(2018, 1, 1), "1514764800", True),
@@ -274,8 +290,8 @@ def test_unknown_raises():
     ),
 )
 def test_masked_json_encoders(value, expected):
-    dumper = json_dumps if simplejson_dumps is None else simplejson_dumps
-    assert dumper(value, cls=MaskedJSONEncoder) == expected
+    _dumps = simplejson_dumps or json_dumps
+    assert _dumps(value, cls=MaskedJSONEncoder) == expected
 
 
 @pytest.mark.parametrize(
@@ -296,7 +312,7 @@ def test_dataclasses(dumper, expected):
 
 @pytest.mark.parametrize(
     "dumper, expected",
-    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}')),
+    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}'),),
 )
 def test_attrs(dumper, expected):
     assert dumper(AttrsItem(attrib=1)) == expected
