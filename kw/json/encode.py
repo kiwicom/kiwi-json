@@ -1,10 +1,11 @@
 import calendar
-from collections import ItemsView, namedtuple
-from decimal import Decimal
-from functools import partial
 import uuid
+from collections import namedtuple
+from decimal import Decimal
+from enum import Enum
+from functools import partial
 
-from ._compat import BaseJSONEncoder, enum, json_dump, json_dumps, simplejson_available
+from ._compat import BaseJSONEncoder, json_dump, json_dumps, simplejson_available
 from .utils import mask_dict
 
 
@@ -37,11 +38,10 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore 
     if isinstance(obj, set):
         return list(obj)
 
-    if enum is not None and isinstance(obj, enum.Enum):
+    if isinstance(obj, Enum):
         return obj.name
 
-    # Second option is for `iteritems()` on Python 2
-    if isinstance(obj, ItemsView) or obj.__class__.__name__ == "dictionary-itemiterator":
+    if obj.__class__.__name__ == "dict_items":
         return dict_factory(obj)
 
     if hasattr(obj, "asdict"):  # dictablemodel
@@ -104,7 +104,7 @@ def format_value(value, precision):
         return round(value, precision)
     if isinstance(value, (list, set)):
         return traverse_iterable(value, precision)
-    if isinstance(value, ItemsView) or value.__class__.__name__ == "dictionary-itemiterator":
+    if value.__class__.__name__ == "dict_items":
         return traverse_dict(dict(value), precision)
     if isinstance(value, dict):
         return traverse_dict(value, precision)
@@ -122,7 +122,6 @@ def format_value(value, precision):
 def traverse_iterable(iterable, precision):
     """Traverse list or set and round floats."""
     return [format_value(value, precision) for value in iterable]
-    
 
 
 def traverse_dict(obj, precision):

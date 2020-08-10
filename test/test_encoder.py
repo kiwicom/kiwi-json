@@ -1,25 +1,26 @@
-from collections import ItemsView, namedtuple
 import datetime
+import os
+import sys
+import uuid
+from collections import namedtuple
 from decimal import Decimal
+from enum import Enum
 from functools import partial
 from json import dumps as json_dumps
 from json import load as json_load
 from json import loads
-import os
-import sys
-import uuid
 
 import arrow
 import attr
-from dictalchemy import DictableModel
 import pytest
+from dictalchemy import DictableModel
 from pytz import UTC
-from sqlalchemy import Column, create_engine, Integer, String
+from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from kw.json import default_encoder, dump, dumps, KiwiJSONEncoder, MaskedJSONEncoder, raw_encoder
-from kw.json._compat import DataclassItem, enum
+from kw.json import KiwiJSONEncoder, MaskedJSONEncoder, default_encoder, dump, dumps, raw_encoder
+from kw.json._compat import DataclassItem
 
 from ._compat import get_asyncpg_record
 
@@ -67,14 +68,9 @@ class HTML:
 
 UUID = uuid.uuid4()
 
-if sys.version_info[0] == 2:
-    items_view = ItemsView({"foo": 1})
-    items_view_float = ItemsView({"foo": 1.333})
-    items_view_complex = ItemsView({1: 1.333, 2: ItemsView({2: 0.333})})
-else:
-    items_view = {"foo": 1}.items()
-    items_view_float = {"foo": 1.333}.items()
-    items_view_complex = {1: 1.333, 2: {2: 0.333}.items()}.items()
+items_view = {"foo": 1}.items()
+items_view_float = {"foo": 1.333}.items()
+items_view_complex = {1: 1.333, 2: {2: 0.333}.items()}.items()
 
 
 @pytest.mark.parametrize(
@@ -225,23 +221,16 @@ def test_dump(tmpdir, value, expected):
         assert json_load(fp) == expected
 
 
-@pytest.mark.skipif(sys.version_info[0] == 3, reason="Not applicable to Python 3")
-def test_iteritems():
-    assert default_encoder({"foo": 1}.iteritems()) == {"foo": 1}
-
-
-@pytest.mark.skipif(enum is None, reason="Enum is not available")
 def test_enum():
-    class SomeEnum(enum.Enum):
+    class SomeEnum(Enum):
         red = 1
         green = 2
 
     assert default_encoder(SomeEnum.red) == "red"
 
 
-@pytest.mark.skipif(enum is None, reason="Enum is not available")
 def test_enum_raw_encoder():
-    class SomeEnum(enum.Enum):
+    class SomeEnum(Enum):
         red = 1
         green = 2
 
@@ -338,7 +327,6 @@ def test_sqlalchemy_cursor_row(alchemy_session):
     assert_json(data, [{"id": 1, "name": "test"}])
 
 
-@pytest.mark.skipif(sys.version_info[0] == 2, reason="That trick doesn't work on Python 2")
 def test_no_attrs():
     # Need to re-import
     del sys.modules["kw.json"]

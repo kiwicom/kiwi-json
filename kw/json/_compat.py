@@ -1,13 +1,4 @@
 try:
-    import enum  # pylint: disable=W0611
-except ImportError:
-    # Python 2.7
-    try:
-        import enum34 as enum  # pylint: disable=W0611
-    except ImportError:
-        enum = None
-
-try:
     from simplejson.encoder import JSONEncoder as BaseJSONEncoder  # pylint: disable=W0611
     from simplejson import dumps as json_dumps  # pylint: disable=W0611
     from simplejson import dump as json_dump  # pylint: disable=W0611
@@ -36,6 +27,5 @@ class DataclassItem:
     """,
         globals(),
     )
-except (SyntaxError, ImportError):
-    # SyntaxError for Python 2.7 & ImportError for Python < 3.7
+except ImportError:
     DataclassItem = None
