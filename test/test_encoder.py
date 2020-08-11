@@ -18,7 +18,14 @@ from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from kw.json import KiwiJSONEncoder, MaskedJSONEncoder, default_encoder, dump, dumps, raw_encoder
+from kw.json import (
+    KiwiJSONEncoder,
+    MaskedJSONEncoder,
+    default_encoder,
+    dump,
+    dumps,
+    raw_encoder,
+)
 from kw.json._compat import DataclassItem, enum
 from kw.json.exceptions import KiwiJsonError
 
@@ -100,10 +107,16 @@ def test_default_encoder(value, expected, date_as_unix_time):
     assert default_encoder(value, date_as_unix_time=date_as_unix_time) == expected
 
 
-@pytest.mark.skipif(simplejson_dumps is None, reason="Decimal encoding with simplejson only")
+@pytest.mark.skipif(
+    simplejson_dumps is None, reason="Decimal encoding with simplejson only"
+)
 @pytest.mark.parametrize(
     "value, expected",
-    ((Decimal("1"), "1"), (Decimal("-1"), "-1"), (Decimal("0.123456789123456789"), "0.123456789123456789"),),
+    (
+        (Decimal("1"), "1"),
+        (Decimal("-1"), "-1"),
+        (Decimal("0.123456789123456789"), "0.123456789123456789"),
+    ),
 )
 def test_simplejson_encoder_with_decimal(value, expected):
     assert dumps(value, use_decimal=True) == expected
@@ -127,7 +140,11 @@ def test_default_encoder_defaults():
         (Decimal("1"), '"1"', False),
         (UUID, '"{}"'.format(str(UUID)), False),
         (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"', False),
-        (datetime.datetime(2018, 1, 1, tzinfo=UTC), '"2018-01-01T00:00:00+00:00"', False,),
+        (
+            datetime.datetime(2018, 1, 1, tzinfo=UTC),
+            '"2018-01-01T00:00:00+00:00"',
+            False,
+        ),
         (arrow.get("2018-01-01"), '"2018-01-01T00:00:00+00:00"', False),
         (datetime.date(2018, 1, 1), '"2018-01-01"', False),
         (datetime.datetime(2018, 1, 1), "1514764800", True),
@@ -149,7 +166,11 @@ def test_dumps(value, expected, date_as_unix_time):
         (({1: 1.333}, {1: 1.333}), '{"1": 1.33}', 2),
         (([1.333, 2.333], [1.333, 2.333]), "[1.33, 2.33]", 2),
         (([1.333, {1: 1.333}], [1.333, {1: 1.333}]), '[1.33, {"1": 1.33}]', 2),
-        (([1.333, {1: 1.333}, {1.333}], [1.333, {1: 1.333}, {1.333}]), '[1.33, {"1": 1.33}, [1.33]]', 2),
+        (
+            ([1.333, {1: 1.333}, {1.333}], [1.333, {1: 1.333}, {1.333}]),
+            '[1.33, {"1": 1.33}, [1.33]]',
+            2,
+        ),
         ((items_view_float, items_view_float), '{"foo": 1.33}', 2),
         ((items_view_complex, items_view_complex), '{"1": 1.33, "2": {"2": 0.33}}', 2),
         ((HTML(), None), '"foo"', 2),
@@ -157,7 +178,10 @@ def test_dumps(value, expected, date_as_unix_time):
         (((1.3333, 2.3333), (1.3333, 2.3333)), "[1.33, 2.33]", 2),
         ((({1: 1.33333}, 1.33333), ({1: 1.33333}, 1.33333)), '[{"1": 1.33}, 1.33]', 2),
         (
-            ([{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}], [{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}]),
+            (
+                [{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}],
+                [{1: 1.222, 2: [1.333, {1: 1.333}, {3: {3.333}}]}],
+            ),
             '[{"1": 1.22, "2": [1.33, {"1": 1.33}, {"3": [3.33]}]}]',
             2,
         ),
@@ -174,10 +198,17 @@ def test_rounding(values, expected, precision):
 @pytest.mark.parametrize(
     "values, expected, precision",
     (
-        ((test_namedtuple, test_namedtuple), {"as_object": '{"a": 1.33, "b": 2.33}', "as_list": "[1.33, 2.33]"}, 2),
+        (
+            (test_namedtuple, test_namedtuple),
+            {"as_object": '{"a": 1.33, "b": 2.33}', "as_list": "[1.33, 2.33]"},
+            2,
+        ),
         (
             (test_namedtuple_complex, test_namedtuple_complex),
-            {"as_object": '{"a": 1.33, "b": {"a": 1.33, "b": {"1": 1.33}}}', "as_list": '[1.33, [1.33, {"1": 1.33}]]',},
+            {
+                "as_object": '{"a": 1.33, "b": {"a": 1.33, "b": {"1": 1.33}}}',
+                "as_list": '[1.33, [1.33, {"1": 1.33}]]',
+            },
             2,
         ),
     ),
@@ -187,7 +218,10 @@ def test_rounding_tuples(values, expected, precision):
     if simplejson_dumps:
         # simplejson supports `namedtuple_as_object` param unlike json
         assert dumps(before, precision=precision) == expected["as_object"]
-        assert dumps(before, precision=precision, namedtuple_as_object=False) == expected["as_list"]
+        assert (
+            dumps(before, precision=precision, namedtuple_as_object=False)
+            == expected["as_list"]
+        )
     else:
         assert dumps(before, precision=precision) == expected["as_list"]
     assert before == after
@@ -204,9 +238,9 @@ def test_raw_encoder_with_date_unix_time_default():
             return "<Foo>"
 
     # by default `raw_encoder` encodes dates as ISO
-    assert dumps({"foo": Foo(), "bar": datetime.date(2018, 1, 1)}, default=raw_encoder) == dumps(
-        {"foo": "<Foo>", "bar": "2018-01-01"}
-    )
+    assert dumps(
+        {"foo": Foo(), "bar": datetime.date(2018, 1, 1)}, default=raw_encoder
+    ) == dumps({"foo": "<Foo>", "bar": "2018-01-01"})
 
 
 def test_dump_with_default():
@@ -275,7 +309,9 @@ def test_unknown_raises():
     class Foo(object):
         bar = True  # pylint: disable=C0102
 
-    with pytest.raises(TypeError, match="^Object of type Foo is not JSON serializable$"):
+    with pytest.raises(
+        TypeError, match="^Object of type Foo is not JSON serializable$"
+    ):
         default_encoder(Foo())
 
 
@@ -305,23 +341,32 @@ def test_masked_json_encoders(value, expected):
         (partial(json_dumps, cls=MaskedJSONEncoder), '{"attrib": 1}'),
     ),
 )
-@pytest.mark.skipif(DataclassItem is None, reason="Dataclasses are available only on Python 3.7+")
+@pytest.mark.skipif(
+    DataclassItem is None, reason="Dataclasses are available only on Python 3.7+"
+)
 def test_dataclasses(dumper, expected):
     assert dumper(DataclassItem(attrib=1)) == expected  # pylint: disable=not-callable
 
 
 @pytest.mark.parametrize(
     "dumper, expected",
-    ((default_encoder, {"attrib": 1}), (partial(json_dumps, default=default_encoder), '{"attrib": 1}'),),
+    (
+        (default_encoder, {"attrib": 1}),
+        (partial(json_dumps, default=default_encoder), '{"attrib": 1}'),
+    ),
 )
 def test_attrs(dumper, expected):
     assert dumper(AttrsItem(attrib=1)) == expected
 
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 7), reason="Dataclasses should not be available")
+@pytest.mark.skipif(
+    sys.version_info[:2] >= (3, 7), reason="Dataclasses should not be available"
+)
 def test_missing_dependency():
     """If we have a class that have the same attributes as attrs provide."""
-    with pytest.raises(TypeError, match="Object of type NotDataclassesItem is not JSON serializable"):
+    with pytest.raises(
+        TypeError, match="Object of type NotDataclassesItem is not JSON serializable"
+    ):
         default_encoder(NotDataclassesItem())
 
 
@@ -354,22 +399,32 @@ def test_sqlalchemy_cursor_row(alchemy_session):
     assert_json(data, [{"id": 1, "name": "test"}])
 
 
-@pytest.mark.skipif(sys.version_info[0] == 2, reason="That trick doesn't work on Python 2")
+@pytest.mark.skipif(
+    sys.version_info[0] == 2, reason="That trick doesn't work on Python 2"
+)
 def test_no_attrs():
     # Need to re-import
     del sys.modules["kw.json"]
     del sys.modules["kw.json.encode"]
     sys.modules["attr"] = None
-    from kw.json import default_encoder  # pylint: disable=reimported,import-outside-toplevel
+    from kw.json import (  # pylint: disable=reimported,import-outside-toplevel
+        default_encoder,
+    )
 
-    with pytest.raises(TypeError, match="Object of type NotAttrsItem is not JSON serializable"):
+    with pytest.raises(
+        TypeError, match="Object of type NotAttrsItem is not JSON serializable"
+    ):
         default_encoder(NotAttrsItem())
 
 
-@pytest.mark.skipif(get_asyncpg_record is None, reason="Asyncpg is available only on Python 3.5+.")
+@pytest.mark.skipif(
+    get_asyncpg_record is None, reason="Asyncpg is available only on Python 3.5+."
+)
 def test_asyncpg():
     import asyncio  # pylint: disable=import-outside-toplevel
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(get_asyncpg_record(os.getenv("DATABASE_URI")))  # pylint: disable=not-callable
+    result = loop.run_until_complete(
+        get_asyncpg_record(os.getenv("DATABASE_URI"))  # pylint: disable=not-callable
+    )
     assert json_dumps(result, default=default_encoder) == '[{"value": 1}]'

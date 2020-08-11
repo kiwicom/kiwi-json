@@ -8,7 +8,9 @@ except ImportError:
         enum = None
 
 try:
-    from simplejson.encoder import JSONEncoder as BaseJSONEncoder  # pylint: disable=W0611
+    from simplejson.encoder import (  # pylint: disable=W0611
+        JSONEncoder as BaseJSONEncoder,
+    )
     from simplejson import dumps as json_dumps  # pylint: disable=W0611
     from simplejson import dump as json_dump  # pylint: disable=W0611
     from simplejson import loads as json_loads  # pylint: disable=W0611
@@ -51,7 +53,10 @@ def prevent_unexpected_argument_error(func):
         try:
             result = func(*args, **kwargs)
         except TypeError as err:
-            if str(err) == "__init__() got an unexpected keyword argument 'use_decimal'":
+            if (
+                str(err)
+                == "__init__() got an unexpected keyword argument 'use_decimal'"
+            ):
                 raise KiwiJsonError(__use_decimal_error_message)
             raise
         return result

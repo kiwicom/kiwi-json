@@ -9,7 +9,9 @@ from .utils import mask_dict
 
 
 def _fail(obj, *args, **kwargs):
-    raise TypeError("Object of type {} is not JSON serializable".format(obj.__class__.__name__))
+    raise TypeError(
+        "Object of type {} is not JSON serializable".format(obj.__class__.__name__)
+    )
 
 
 try:
@@ -23,7 +25,9 @@ except ImportError:
     dc_asdict = _fail
 
 
-def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore RadonBear
+def default_encoder(
+    obj, dict_factory=dict, date_as_unix_time=False
+):  # Ignore RadonBear
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
         if date_as_unix_time:
             if obj.__class__.__name__ == "Arrow":
@@ -41,7 +45,10 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore 
         return obj.name
 
     # Second option is for `iteritems()` on Python 2
-    if isinstance(obj, ItemsView) or obj.__class__.__name__ == "dictionary-itemiterator":
+    if (
+        isinstance(obj, ItemsView)
+        or obj.__class__.__name__ == "dictionary-itemiterator"
+    ):
         return dict_factory(obj)
 
     if hasattr(obj, "asdict"):  # dictablemodel
@@ -68,7 +75,9 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):  # Ignore 
 def raw_encoder(obj, date_as_unix_time=False):
     """Return representation of values that are not encodable instead of encoding them."""
     try:
-        return default_encoder(obj, dict_factory=mask_dict, date_as_unix_time=date_as_unix_time)
+        return default_encoder(
+            obj, dict_factory=mask_dict, date_as_unix_time=date_as_unix_time
+        )
     except TypeError:
         return repr(obj)
 
@@ -95,7 +104,9 @@ def modify_kwargs(kwargs):
         kwargs.setdefault("use_decimal", False)
     if "default" not in kwargs:
         date_as_unix_time = kwargs.pop("date_as_unix_time", False)
-        kwargs["default"] = partial(default_encoder, date_as_unix_time=date_as_unix_time)
+        kwargs["default"] = partial(
+            default_encoder, date_as_unix_time=date_as_unix_time
+        )
 
 
 def format_value(value, precision):
@@ -104,7 +115,10 @@ def format_value(value, precision):
         return round(value, precision)
     if isinstance(value, (list, set)):
         return traverse_iterable(value, precision)
-    if isinstance(value, ItemsView) or value.__class__.__name__ == "dictionary-itemiterator":
+    if (
+        isinstance(value, ItemsView)
+        or value.__class__.__name__ == "dictionary-itemiterator"
+    ):
         return traverse_dict(dict(value), precision)
     if isinstance(value, dict):
         return traverse_dict(value, precision)
