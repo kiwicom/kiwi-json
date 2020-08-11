@@ -1,0 +1,25 @@
+name: Code analysis
+on: push
+
+jobs:
+  black:
+    name: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: docker://kiwicom/black:19.10b0
+        with:
+          entrypoint: black
+          args: --check . --diff
+
+  pylint:
+    name: pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: docker://kiwicom/tox
+        env:
+          XDG_CACHE_HOME: /tmp/cache
+        with:
+          entrypoint: tox
+          args: -e pylint
