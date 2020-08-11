@@ -11,7 +11,9 @@ except ImportError:
     simplejson_loads = None
 
 
-@pytest.mark.skipif(simplejson_loads is None, reason="Decimal encoding with simplejson only")
+@pytest.mark.skipif(
+    simplejson_loads is None, reason="Decimal encoding with simplejson only"
+)
 @pytest.mark.parametrize(
     "value, expected",
     [
