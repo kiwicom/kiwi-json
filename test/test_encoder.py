@@ -2,7 +2,7 @@ import datetime
 import os
 import sys
 import uuid
-from collections import ItemsView, namedtuple
+from collections import namedtuple
 from decimal import Decimal
 from functools import partial
 from json import dumps as json_dumps
@@ -28,8 +28,6 @@ from kw.json import (
 )
 from kw.json._compat import DataclassItem, enum
 from kw.json.exceptions import KiwiJsonError
-
-from ._compat import get_asyncpg_record
 
 try:
     from simplejson import dumps as simplejson_dumps
@@ -75,14 +73,9 @@ class HTML:
 
 UUID = uuid.uuid4()
 
-if sys.version_info[0] == 2:
-    items_view = ItemsView({"foo": 1})
-    items_view_float = ItemsView({"foo": 1.333})
-    items_view_complex = ItemsView({1: 1.333, 2: ItemsView({2: 0.333})})
-else:
-    items_view = {"foo": 1}.items()
-    items_view_float = {"foo": 1.333}.items()
-    items_view_complex = {1: 1.333, 2: {2: 0.333}.items()}.items()
+items_view = {"foo": 1}.items()
+items_view_float = {"foo": 1.333}.items()
+items_view_complex = {1: 1.333, 2: {2: 0.333}.items()}.items()
 
 
 @pytest.mark.parametrize(
@@ -275,11 +268,6 @@ def test_dump(tmpdir, value, expected):
         assert json_load(fp) == expected
 
 
-@pytest.mark.skipif(sys.version_info[0] == 3, reason="Not applicable to Python 3")
-def test_iteritems():
-    assert default_encoder({"foo": 1}.iteritems()) == {"foo": 1}
-
-
 @pytest.mark.skipif(enum is None, reason="Enum is not available")
 def test_enum():
     class SomeEnum(enum.Enum):
@@ -341,9 +329,6 @@ def test_masked_json_encoders(value, expected):
         (partial(json_dumps, cls=MaskedJSONEncoder), '{"attrib": 1}'),
     ),
 )
-@pytest.mark.skipif(
-    DataclassItem is None, reason="Dataclasses are available only on Python 3.7+"
-)
 def test_dataclasses(dumper, expected):
     assert dumper(DataclassItem(attrib=1)) == expected  # pylint: disable=not-callable
 
@@ -359,9 +344,6 @@ def test_attrs(dumper, expected):
     assert dumper(AttrsItem(attrib=1)) == expected
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] >= (3, 7), reason="Dataclasses should not be available"
-)
 def test_missing_dependency():
     """If we have a class that have the same attributes as attrs provide."""
     with pytest.raises(
@@ -399,9 +381,6 @@ def test_sqlalchemy_cursor_row(alchemy_session):
     assert_json(data, [{"id": 1, "name": "test"}])
 
 
-@pytest.mark.skipif(
-    sys.version_info[0] == 2, reason="That trick doesn't work on Python 2"
-)
 def test_no_attrs():
     # Need to re-import
     del sys.modules["kw.json"]
@@ -417,14 +396,18 @@ def test_no_attrs():
         default_encoder(NotAttrsItem())
 
 
-@pytest.mark.skipif(
-    get_asyncpg_record is None, reason="Asyncpg is available only on Python 3.5+."
-)
+async def get_asyncpg_record(dsn):
+    import asyncpg
+
+    connection = await asyncpg.connect(dsn)
+    result = await connection.fetch("SELECT 1 as value")
+    await connection.close()
+    return result
+
+
 def test_asyncpg():
     import asyncio  # pylint: disable=import-outside-toplevel
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(
-        get_asyncpg_record(os.getenv("DATABASE_URI"))  # pylint: disable=not-callable
-    )
+    result = loop.run_until_complete(get_asyncpg_record(os.getenv("DATABASE_URI")))
     assert json_dumps(result, default=default_encoder) == '[{"value": 1}]'

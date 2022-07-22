@@ -1,11 +1,7 @@
 try:
     import enum  # pylint: disable=W0611
 except ImportError:
-    # Python 2.7
-    try:
-        import enum34 as enum  # pylint: disable=W0611
-    except ImportError:
-        enum = None
+    enum = None
 
 try:
     from simplejson.encoder import (  # pylint: disable=W0611
@@ -27,20 +23,12 @@ except ImportError:
     simplejson_available = False
 from .exceptions import KiwiJsonError
 
-try:
-    # To avoid a syntax error when type annotations syntax is not available
-    exec(  # pylint: disable=exec-used
-        """
 from dataclasses import dataclass
+
+
 @dataclass
 class DataclassItem:
     attrib: int
-    """,
-        globals(),
-    )
-except (SyntaxError, ImportError):
-    # SyntaxError for Python 2.7 & ImportError for Python < 3.7
-    DataclassItem = None
 
 
 def prevent_unexpected_argument_error(func):

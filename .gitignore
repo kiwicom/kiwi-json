@@ -16,3 +16,5 @@ coverage.xml
 __pycache__
 *.pyc
 venv
+env
+.env

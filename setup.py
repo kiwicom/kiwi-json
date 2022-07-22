@@ -21,7 +21,6 @@ setup(
         "Private :: Do Not Upload",
         "Development Status :: 4 - Beta",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
     ],
 )
