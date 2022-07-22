@@ -25,9 +25,7 @@ except ImportError:
     dc_asdict = _fail
 
 
-def default_encoder(
-    obj, dict_factory=dict, date_as_unix_time=False
-):  # Ignore RadonBear
+def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
         if date_as_unix_time:
             if obj.__class__.__name__ == "Arrow":

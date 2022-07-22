@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from .encode import default_encoder
 
 
-class JSONExtension(object):  # Ignore KeywordBear
+class JSONExtension(object):
     def __init__(self, app=None, encoder=default_encoder, dict_factory=dict):
         self.app = app
         if app is not None:
