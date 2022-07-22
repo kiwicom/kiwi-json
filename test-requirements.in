@@ -1,5 +1,5 @@
 arrow
-asyncpg; python_version > "3"
+asyncpg
 dictalchemy
 flask
 pytest <= 4.6.6

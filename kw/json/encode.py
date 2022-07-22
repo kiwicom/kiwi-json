@@ -1,6 +1,7 @@
 import calendar
 import uuid
-from collections import ItemsView, namedtuple
+from collections import namedtuple
+from collections.abc import ItemsView
 from decimal import Decimal
 from functools import partial
 
@@ -42,11 +43,7 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if enum is not None and isinstance(obj, enum.Enum):
         return obj.name
 
-    # Second option is for `iteritems()` on Python 2
-    if (
-        isinstance(obj, ItemsView)
-        or obj.__class__.__name__ == "dictionary-itemiterator"
-    ):
+    if isinstance(obj, ItemsView):
         return dict_factory(obj)
 
     if hasattr(obj, "asdict"):  # dictablemodel

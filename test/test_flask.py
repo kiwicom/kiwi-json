@@ -1,13 +1,8 @@
-import sys
-
 from flask import Flask, json
 
 from kw.json.flask import JSONExtension
 
-if sys.version_info[0] == 2:
-    items = {"secret": "foo"}.iteritems()
-else:
-    items = {"secret": "foo"}.items()
+items = {"secret": "foo"}.items()
 
 
 def test_mask_dict():
