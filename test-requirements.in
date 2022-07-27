@@ -1,6 +1,5 @@
 arrow
 asyncpg
-dictalchemy
 flask
 pytest <= 4.6.6
 pytest-cov

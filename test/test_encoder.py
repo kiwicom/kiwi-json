@@ -12,7 +12,6 @@ from json import loads
 import arrow
 import attr
 import pytest
-from dictalchemy import DictableModel
 from pytz import UTC
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -35,13 +34,16 @@ except ImportError:
     simplejson_dumps = None
 
 
-Base = declarative_base(cls=DictableModel)
+Base = declarative_base()
 
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+
+    def asdict(self):
+        return {"id": self.id, "name": self.name}
 
 
 class Custom:
@@ -59,7 +61,7 @@ class AttrsItem(object):
 
 
 class NotDataclassesItem(object):
-    __dataclass_fields__ = ()
+    __dataclass_fields__ = dict()
 
 
 class NotAttrsItem(object):
@@ -342,14 +344,6 @@ def test_dataclasses(dumper, expected):
 )
 def test_attrs(dumper, expected):
     assert dumper(AttrsItem(attrib=1)) == expected
-
-
-def test_missing_dependency():
-    """If we have a class that have the same attributes as attrs provide."""
-    with pytest.raises(
-        TypeError, match="Object of type NotDataclassesItem is not JSON serializable"
-    ):
-        default_encoder(NotDataclassesItem())
 
 
 @pytest.fixture
