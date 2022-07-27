@@ -46,7 +46,7 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if isinstance(obj, ItemsView):
         return dict_factory(obj)
 
-    if hasattr(obj, "asdict"):  # dictablemodel
+    if hasattr(obj, "asdict"):
         return dict_factory(obj.asdict().items())
 
     if obj.__class__.__name__ == "RowProxy":  # sqlalchemy
