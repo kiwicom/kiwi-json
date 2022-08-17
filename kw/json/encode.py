@@ -10,9 +10,7 @@ from .utils import mask_dict
 
 
 def _fail(obj, *args, **kwargs):
-    raise TypeError(
-        "Object of type {} is not JSON serializable".format(obj.__class__.__name__)
-    )
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 try:
@@ -54,7 +52,7 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if hasattr(obj, "__module__") and "sqlalchemy" in obj.__module__:
         if obj.__class__.__name__ == "RowProxy":
             return dict_factory(obj.items())
-        elif obj.__class__.__name__ == "Row":
+        if obj.__class__.__name__ == "Row":
             return dict_factory(obj)
 
     if obj.__class__.__name__ == "Record":  # asyncpg
@@ -83,18 +81,18 @@ def raw_encoder(obj, date_as_unix_time=False):
 
 
 class MaskedJSONEncoder(BaseJSONEncoder):
-    def default(self, obj):  # pylint: disable=method-hidden
-        return default_encoder(obj, mask_dict)
+    def default(self, o):  # pylint: disable=method-hidden
+        return default_encoder(o, mask_dict)
 
     def encode(self, o):
         if isinstance(o, dict):
             o = mask_dict(o)
-        return super(MaskedJSONEncoder, self).encode(o)
+        return super().encode(o)
 
 
 class KiwiJSONEncoder(BaseJSONEncoder):
-    def default(self, obj):  # pylint: disable=method-hidden
-        return default_encoder(obj)
+    def default(self, o):  # pylint: disable=method-hidden
+        return default_encoder(o)
 
 
 def modify_kwargs(kwargs):
