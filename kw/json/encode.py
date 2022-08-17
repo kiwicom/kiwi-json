@@ -30,6 +30,8 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if hasattr(obj, "isoformat"):  # date, datetime, arrow
         if date_as_unix_time:
             if obj.__class__.__name__ == "Arrow":
+                if callable(obj.timestamp):
+                    return obj.timestamp()
                 return obj.timestamp
             return calendar.timegm(obj.timetuple())
         return obj.isoformat()
@@ -49,8 +51,11 @@ def default_encoder(obj, dict_factory=dict, date_as_unix_time=False):
     if hasattr(obj, "asdict"):
         return dict_factory(obj.asdict().items())
 
-    if obj.__class__.__name__ == "RowProxy":  # sqlalchemy
-        return dict_factory(obj.items())
+    if hasattr(obj, "__module__") and "sqlalchemy" in obj.__module__:
+        if obj.__class__.__name__ == "RowProxy":
+            return dict_factory(obj.items())
+        elif obj.__class__.__name__ == "Row":
+            return dict_factory(obj)
 
     if obj.__class__.__name__ == "Record":  # asyncpg
         return dict_factory(obj)
