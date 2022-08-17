@@ -145,7 +145,7 @@ def test_default_encoder_defaults():
         (datetime.datetime(2018, 1, 1), "1514764800", True),
         (datetime.datetime(2018, 1, 1, tzinfo=UTC), "1514764800", True),
         (datetime.date(2018, 1, 1), "1514764800", True),
-        (arrow.get("2018-01-01"), "1514764800", True),
+        (arrow.get("2018-01-01"), "1514764800.0", True),
         (HTML(), '"foo"', False),
         (items_view, '{"foo": 1}', False),
     ),
