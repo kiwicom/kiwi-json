@@ -10,6 +10,8 @@ from json import load as json_load
 from json import loads
 
 import arrow
+import asyncio
+import asyncpg
 import attr
 import pytest
 from pytz import UTC
@@ -61,7 +63,7 @@ class AttrsItem(object):
 
 
 class NotDataclassesItem(object):
-    __dataclass_fields__ = dict()
+    __dataclass_fields__ = {}
 
 
 class NotAttrsItem(object):
@@ -133,7 +135,7 @@ def test_default_encoder_defaults():
     (
         ({1}, "[1]", False),
         (Decimal("1"), '"1"', False),
-        (UUID, '"{}"'.format(str(UUID)), False),
+        (UUID, f'"{str(UUID)}"', False),
         (datetime.datetime(2018, 1, 1), '"2018-01-01T00:00:00"', False),
         (
             datetime.datetime(2018, 1, 1, tzinfo=UTC),
@@ -264,7 +266,7 @@ def test_dump_with_default_and_date_as_unix_time():
 )
 def test_dump(tmpdir, value, expected):
     filename = str(tmpdir.join("test_file.json"))
-    with open(filename, "w+") as fp:
+    with open(filename, "w+", encoding="UTF-8") as fp:
         dump(value, fp)
         fp.seek(0, 0)
         assert json_load(fp) == expected
@@ -391,8 +393,6 @@ def test_no_attrs():
 
 
 async def get_asyncpg_record(dsn):
-    import asyncpg
-
     connection = await asyncpg.connect(dsn)
     result = await connection.fetch("SELECT 1 as value")
     await connection.close()
@@ -400,8 +400,6 @@ async def get_asyncpg_record(dsn):
 
 
 def test_asyncpg():
-    import asyncio  # pylint: disable=import-outside-toplevel
-
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(get_asyncpg_record(os.getenv("DATABASE_URI")))
     assert json_dumps(result, default=default_encoder) == '[{"value": 1}]'

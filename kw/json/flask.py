@@ -13,9 +13,7 @@ class JSONExtension(object):
         from flask import json  # pylint: disable=import-outside-toplevel
 
         class JSONEncoder(json.JSONEncoder):
-            # seems pylint bug, original message
-            # E0202: An attribute defined in json.encoder line 158 hides this method (method-hidden)
-            def default(self, obj):  # pylint: disable=E0202
-                return encoder(obj, dict_factory)
+            def default(self, o):
+                return encoder(o, dict_factory)
 
         app.json_encoder = JSONEncoder

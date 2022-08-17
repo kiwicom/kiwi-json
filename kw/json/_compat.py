@@ -45,7 +45,9 @@ def prevent_unexpected_argument_error(func):
                 str(err)
                 == "__init__() got an unexpected keyword argument 'use_decimal'"
             ):
-                raise KiwiJsonError(__use_decimal_error_message)
+                raise KiwiJsonError(
+                    __use_decimal_error_message
+                )  # pylint: disable=W0707
             raise
         return result
 
