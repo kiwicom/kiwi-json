@@ -37,5 +37,4 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('*requirements.txt') }}
     strategy:
       matrix:
-        toxenv: [py37, py38, py38-simplejson]
-
+        toxenv: [py37, py38, py39, py310, py310-simplejson]

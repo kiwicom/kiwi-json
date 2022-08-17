@@ -41,13 +41,12 @@ def prevent_unexpected_argument_error(func):
         try:
             result = func(*args, **kwargs)
         except TypeError as err:
-            if (
-                str(err)
-                == "__init__() got an unexpected keyword argument 'use_decimal'"
+            if str(err).endswith(
+                "__init__() got an unexpected keyword argument 'use_decimal'"
             ):
-                raise KiwiJsonError(
+                raise KiwiJsonError(  # pylint: disable=W0707
                     __use_decimal_error_message
-                )  # pylint: disable=W0707
+                )
             raise
         return result
 
