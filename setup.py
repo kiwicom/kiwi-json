@@ -8,7 +8,7 @@ with open("test-requirements.txt") as f:
 
 setup(
     name="kiwi-json",
-    version="0.9.0",
+    version="0.10.0",
     url="https://github.com/kiwicom/kiwi-json",
     author="Kiwi.com platform team",
     author_email="platform@kiwi.com",
