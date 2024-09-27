@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 with open("requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -14,11 +14,11 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="kiwi-json",
-    version="0.10.0",
+    version="0.10.1",
     url="https://github.com/kiwicom/kiwi-json",
     author="Kiwi.com platform team",
     author_email="platform@kiwi.com",
-    packages=find_packages(exclude=["test*"]),
+    packages=find_namespace_packages(exclude=["test*"]),
     install_requires=REQUIREMENTS,
     tests_require=TEST_REQUIREMENTS,
     description="DRY JSON encoder.",
