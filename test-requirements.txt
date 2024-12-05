@@ -51,8 +51,6 @@ six==1.16.0
 sqlalchemy==1.4.40
     # via -r test-requirements.in
 tomli==2.0.1
-    # via
-    #   coverage
-    #   pytest
-werkzeug==2.2.2
+    # via pytest
+werkzeug==2.2.3
     # via flask
